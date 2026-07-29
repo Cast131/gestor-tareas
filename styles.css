@@ -48,7 +48,7 @@ header p {
     color: #2c3e50;
 }
 
-.input-group input, 
+.input-group input,
 .input-group textarea {
     width: 100%;
     padding: 10px;
@@ -57,8 +57,23 @@ header p {
     font-size: 16px;
 }
 
-.input-group input:focus, 
+.input-group input:focus,
 .input-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.select-priority {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.select-priority:focus {
     outline: none;
     border-color: #3498db;
 }
@@ -80,9 +95,50 @@ header p {
     background-color: #2980b9;
 }
 
-.task-list-section h2 {
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 15px;
+    gap: 10px;
+}
+
+.filter-bar h2 {
     color: #2c3e50;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    width: 180px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.filter-select {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #3498db;
 }
 
 .task-card {
@@ -93,11 +149,65 @@ header p {
     margin-bottom: 15px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     position: relative;
+    transition: opacity 0.3s;
 }
 
-.task-card h3 {
+.task-card.completed {
+    opacity: 0.55;
+    border-left-color: #27ae60;
+    background: #f9fdf9;
+}
+
+.task-card.completed h3,
+.task-card.completed .descripcion {
+    text-decoration: line-through;
+    color: #999;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.card-header h3 {
     color: #2c3e50;
-    margin-bottom: 5px;
+    margin: 0;
+    flex: 1;
+}
+
+.checkbox-complete {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    accent-color: #27ae60;
+    flex-shrink: 0;
+}
+
+.priority-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.priority-alta {
+    background: #ffe0e0;
+    color: #c0392b;
+}
+
+.priority-media {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.priority-baja {
+    background: #d4edda;
+    color: #155724;
 }
 
 .task-card .materia {

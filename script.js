@@ -1,25 +1,29 @@
-const SUPABASE_URL = 'https://fysjierhimzjpotfwbkf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_msOvy_8roFVAn_eDmVRGHQ__MfBNzV3';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+var SUPABASE_URL = 'https://fysjierhimzjpotfwbkf.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_msOvy_8roFVAn_eDmVRGHQ__MfBNzV3';
+var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const MONTHS = [
+var MONTHS = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
-const dateInput = document.getElementById('fecha');
-const calendarDropdown = document.getElementById('calendar-dropdown');
-const calMonthYear = document.getElementById('cal-month-year');
-const calendarDays = document.getElementById('calendar-days');
-const calPrev = document.getElementById('cal-prev');
-const calNext = document.getElementById('cal-next');
-const form = document.getElementById('task-form');
-const tasksContainer = document.getElementById('tasks-container');
+var dateInput = document.getElementById('fecha');
+var calendarDropdown = document.getElementById('calendar-dropdown');
+var calMonthYear = document.getElementById('cal-month-year');
+var calendarDays = document.getElementById('calendar-days');
+var calPrev = document.getElementById('cal-prev');
+var calNext = document.getElementById('cal-next');
+var form = document.getElementById('task-form');
+var tasksContainer = document.getElementById('tasks-container');
+var searchInput = document.getElementById('search-input');
+var filterStatus = document.getElementById('filter-status');
+var filterPriority = document.getElementById('filter-priority');
 
-let currentDate = new Date();
-let selectedDate = null;
-let currentMonth = currentDate.getMonth();
-let currentYear = currentDate.getFullYear();
+var currentDate = new Date();
+var selectedDate = null;
+var currentMonth = currentDate.getMonth();
+var currentYear = currentDate.getFullYear();
+var allTasks = [];
 
 function renderCalendar() {
     calendarDays.innerHTML = '';
@@ -38,28 +42,28 @@ function renderCalendar() {
     }
 
     for (var day = 1; day <= daysInMonth; day++) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = day;
+        (function (dayNum) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = dayNum;
 
-        var isToday = (
-            day === currentDate.getDate() &&
-            currentMonth === currentDate.getMonth() &&
-            currentYear === currentDate.getFullYear()
-        );
-        if (isToday) btn.classList.add('today');
+            var isToday = (
+                dayNum === currentDate.getDate() &&
+                currentMonth === currentDate.getMonth() &&
+                currentYear === currentDate.getFullYear()
+            );
+            if (isToday) btn.classList.add('today');
 
-        if (
-            selectedDate &&
-            day === selectedDate.getDate() &&
-            currentMonth === selectedDate.getMonth() &&
-            currentYear === selectedDate.getFullYear()
-        ) {
-            btn.classList.add('selected');
-        }
+            if (
+                selectedDate &&
+                dayNum === selectedDate.getDate() &&
+                currentMonth === selectedDate.getMonth() &&
+                currentYear === selectedDate.getFullYear()
+            ) {
+                btn.classList.add('selected');
+            }
 
-        btn.addEventListener('click', function (dayNum) {
-            return function () {
+            btn.addEventListener('click', function () {
                 selectedDate = new Date(currentYear, currentMonth, dayNum);
                 var formatted = selectedDate.toLocaleDateString('es-ES', {
                     weekday: 'long',
@@ -71,10 +75,10 @@ function renderCalendar() {
                 dateInput.dataset.iso = selectedDate.toISOString().split('T')[0];
                 renderCalendar();
                 calendarDropdown.classList.remove('active');
-            };
-        }(day));
+            });
 
-        calendarDays.appendChild(btn);
+            calendarDays.appendChild(btn);
+        })(day);
     }
 
     var totalCells = firstDay + daysInMonth;
@@ -124,50 +128,118 @@ document.addEventListener('click', function (e) {
     }
 });
 
+function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 function renderTaskCard(task) {
     var taskCard = document.createElement('div');
     taskCard.className = 'task-card';
     taskCard.dataset.id = task.id;
 
+    if (task.completed) {
+        taskCard.classList.add('completed');
+    }
+
+    var priorityLabel = { alta: 'Alta', media: 'Media', baja: 'Baja' };
+    var prio = task.priority || 'media';
+
+    var checkedAttr = task.completed ? ' checked' : '';
+
     taskCard.innerHTML =
         '<button class="btn-delete">Borrar</button>' +
-        '<h3>' + escapeHtml(task.nombre) + '</h3>' +
+        '<div class="card-header">' +
+            '<input type="checkbox" class="checkbox-complete" title="Marcar como completada"' + checkedAttr + '>' +
+            '<h3>' + escapeHtml(task.nombre) + '</h3>' +
+            '<span class="priority-badge priority-' + prio + '">' + (priorityLabel[prio] || 'Media') + '</span>' +
+        '</div>' +
         '<p class="materia"><span role="img" aria-label="libro">📚</span> ' + escapeHtml(task.materia) + '</p>' +
         '<p class="descripcion">' + escapeHtml(task.descripcion) + '</p>' +
         '<p class="fecha"><span role="img" aria-label="calendario">📅</span> Entrega: ' + escapeHtml(task.fecha) + '</p>';
 
+    taskCard.querySelector('.checkbox-complete').addEventListener('change', function () {
+        var newCompleted = this.checked;
+        supabaseClient
+            .from('tareas')
+            .update({ completed: newCompleted })
+            .eq('id', task.id)
+            .then(function () {
+                task.completed = newCompleted;
+                if (newCompleted) {
+                    taskCard.classList.add('completed');
+                } else {
+                    taskCard.classList.remove('completed');
+                }
+                applyFilters();
+            });
+    });
+
     taskCard.querySelector('.btn-delete').addEventListener('click', function () {
+        if (!confirm('¿Eliminar esta tarea?')) return;
         supabaseClient
             .from('tareas')
             .delete()
             .eq('id', task.id)
             .then(function () {
                 taskCard.remove();
+                allTasks = allTasks.filter(function (t) { return t.id !== task.id; });
             });
     });
 
     return taskCard;
 }
 
-function escapeHtml(str) {
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+function applyFilters() {
+    var query = (searchInput.value || '').toLowerCase().trim();
+    var status = filterStatus.value;
+    var priority = filterPriority.value;
+
+    var cards = tasksContainer.querySelectorAll('.task-card');
+    cards.forEach(function (card) {
+        var id = parseInt(card.dataset.id);
+        var task = null;
+        for (var i = 0; i < allTasks.length; i++) {
+            if (allTasks[i].id === id) { task = allTasks[i]; break; }
+        }
+        if (!task) { card.style.display = ''; return; }
+
+        var show = true;
+
+        if (query) {
+            var text = (task.nombre + ' ' + task.materia + ' ' + task.descripcion).toLowerCase();
+            if (text.indexOf(query) === -1) show = false;
+        }
+
+        if (status === 'pendientes' && task.completed) show = false;
+        if (status === 'completadas' && !task.completed) show = false;
+
+        if (priority !== 'todas' && task.priority !== priority) show = false;
+
+        card.style.display = show ? '' : 'none';
+    });
 }
 
+searchInput.addEventListener('input', applyFilters);
+filterStatus.addEventListener('change', applyFilters);
+filterPriority.addEventListener('change', applyFilters);
+
 async function loadTasks() {
-    var { data, error } = await supabaseClient
+    var result = await supabaseClient
         .from('tareas')
         .select('*')
         .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('Error al cargar tareas:', error);
+    if (result.error) {
+        console.error('Error al cargar tareas:', result.error);
         return;
     }
 
+    allTasks = result.data;
     tasksContainer.innerHTML = '';
-    data.forEach(function (task) {
+    allTasks.forEach(function (task) {
         tasksContainer.appendChild(renderTaskCard(task));
     });
 }
@@ -180,31 +252,37 @@ form.addEventListener('submit', async function (evento) {
     var tarea = document.getElementById('tarea').value;
     var fecha = dateInput.value;
     var fechaIso = dateInput.dataset.iso || '';
+    var prioridad = document.getElementById('prioridad').value;
 
-    var { data, error } = await supabaseClient
+    var result = await supabaseClient
         .from('tareas')
         .insert([{
             nombre: nombre,
             materia: materia,
             descripcion: tarea,
             fecha: fecha,
-            fecha_iso: fechaIso
+            fecha_iso: fechaIso,
+            priority: prioridad,
+            completed: false
         }])
         .select()
         .single();
 
-    if (error) {
-        console.error('Error al guardar tarea:', error);
+    if (result.error) {
+        console.error('Error al guardar tarea:', result.error);
         return;
     }
 
-    tasksContainer.prepend(renderTaskCard(data));
+    allTasks.unshift(result.data);
+    tasksContainer.prepend(renderTaskCard(result.data));
 
     form.reset();
+    document.getElementById('prioridad').value = 'media';
     selectedDate = null;
     currentMonth = currentDate.getMonth();
     currentYear = currentDate.getFullYear();
     renderCalendar();
+    applyFilters();
 });
 
 loadTasks();

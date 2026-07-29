@@ -49,12 +49,37 @@
                     </div>
                 </div>
 
+                <div class="input-group">
+                    <label for="prioridad">Prioridad</label>
+                    <select id="prioridad" class="select-priority">
+                        <option value="alta">Alta</option>
+                        <option value="media" selected>Media</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn-submit">Agregar Actividad</button>
             </form>
         </section>
 
         <section class="task-list-section">
-            <h2>Actividades Pendientes</h2>
+            <div class="filter-bar">
+                <h2>Actividades</h2>
+                <div class="filter-controls">
+                    <input type="text" id="search-input" class="search-input" placeholder="Buscar tarea...">
+                    <select id="filter-status" class="filter-select">
+                        <option value="todas">Todas</option>
+                        <option value="pendientes">Pendientes</option>
+                        <option value="completadas">Completadas</option>
+                    </select>
+                    <select id="filter-priority" class="filter-select">
+                        <option value="todas">Todas las prioridades</option>
+                        <option value="alta">Alta</option>
+                        <option value="media">Media</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </div>
+            </div>
             <div id="tasks-container">
             </div>
         </section>
