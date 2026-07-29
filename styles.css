@@ -1,0 +1,246 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f7f6;
+    color: #333;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    color: #2c3e50;
+}
+
+header p {
+    color: #7f8c8d;
+}
+
+.form-section {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.input-group input, 
+.input-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.input-group input:focus, 
+.input-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.btn-submit {
+    width: 100%;
+    background-color: #3498db;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #2980b9;
+}
+
+.task-list-section h2 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.task-card {
+    background: #ffffff;
+    padding: 20px;
+    border-left: 5px solid #e74c3c;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative;
+}
+
+.task-card h3 {
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.task-card .materia {
+    color: #3498db;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.task-card .descripcion {
+    margin-bottom: 15px;
+    color: #555;
+    line-height: 1.5;
+}
+
+.task-card .fecha {
+    font-size: 13px;
+    color: #7f8c8d;
+    background: #ecf0f1;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.btn-delete {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+}
+
+.custom-datepicker {
+    position: relative;
+}
+
+.date-input {
+    cursor: pointer;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237f8c8d' stroke-width='2'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E") no-repeat right 12px center;
+    padding-right: 40px;
+}
+
+.calendar-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    padding: 12px;
+    width: 280px;
+    margin-top: 4px;
+}
+
+.calendar-dropdown.active {
+    display: block;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.cal-month-year {
+    font-weight: 700;
+    font-size: 15px;
+    color: #2c3e50;
+}
+
+.cal-nav {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cal-nav:hover {
+    background: #ecf0f1;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #7f8c8d;
+    margin-bottom: 6px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    text-align: center;
+}
+
+.calendar-days button {
+    width: 100%;
+    aspect-ratio: 1;
+    border: none;
+    background: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+}
+
+.calendar-days button:hover {
+    background: #ecf0f1;
+}
+
+.calendar-days button.selected {
+    background: #3498db;
+    color: #fff;
+}
+
+.calendar-days button.today {
+    font-weight: 700;
+    color: #3498db;
+}
+
+.calendar-days button.other-month {
+    color: #ccc;
+    cursor: default;
+}

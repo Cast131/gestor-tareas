@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tareas Universitarias</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gestor de Tareas</h1>
+            <p>Registro de actividades universitarias</p>
+        </header>
+
+        <section class="form-section">
+            <form id="task-form">
+                <div class="input-group">
+                    <label for="nombre">Nombre del estudiante</label>
+                    <input type="text" id="nombre" placeholder="Ej. Juan Pérez" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="materia">Materia o Carrera</label>
+                    <input type="text" id="materia" placeholder="Ej. Cálculo I / Ingeniería" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="tarea">Tarea a desarrollar</label>
+                    <textarea id="tarea" rows="3" placeholder="Describe lo que hay que hacer..." required></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="fecha">Fecha de entrega</label>
+                    <div class="custom-datepicker">
+                        <input type="text" id="fecha" class="date-input" placeholder="Selecciona una fecha" readonly required>
+                        <div class="calendar-dropdown" id="calendar-dropdown">
+                            <div class="calendar-header">
+                                <button type="button" class="cal-nav cal-prev" id="cal-prev">&lt;</button>
+                                <span class="cal-month-year" id="cal-month-year"></span>
+                                <button type="button" class="cal-nav cal-next" id="cal-next">&gt;</button>
+                            </div>
+                            <div class="calendar-weekdays">
+                                <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+                            </div>
+                            <div class="calendar-days" id="calendar-days"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Agregar Actividad</button>
+            </form>
+        </section>
+
+        <section class="task-list-section">
+            <h2>Actividades Pendientes</h2>
+            <div id="tasks-container">
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
