@@ -1,6 +1,6 @@
 const SUPABASE_URL = 'https://fysjierhimzjpotfwbkf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_msOvy_8roFVAn_eDmVRGHQ__MfBNzV3';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const MONTHS = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -137,7 +137,7 @@ function renderTaskCard(task) {
         '<p class="fecha"><span role="img" aria-label="calendario">📅</span> Entrega: ' + escapeHtml(task.fecha) + '</p>';
 
     taskCard.querySelector('.btn-delete').addEventListener('click', function () {
-        supabase
+        supabaseClient
             .from('tareas')
             .delete()
             .eq('id', task.id)
@@ -156,7 +156,7 @@ function escapeHtml(str) {
 }
 
 async function loadTasks() {
-    var { data, error } = await supabase
+    var { data, error } = await supabaseClient
         .from('tareas')
         .select('*')
         .order('created_at', { ascending: false });
@@ -181,7 +181,7 @@ form.addEventListener('submit', async function (evento) {
     var fecha = dateInput.value;
     var fechaIso = dateInput.dataset.iso || '';
 
-    var { data, error } = await supabase
+    var { data, error } = await supabaseClient
         .from('tareas')
         .insert([{
             nombre: nombre,
