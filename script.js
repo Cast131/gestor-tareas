@@ -150,7 +150,7 @@ function renderTaskCard(task) {
     var checkedAttr = task.completed ? ' checked' : '';
 
     taskCard.innerHTML =
-        '<button class="btn-delete">Borrar</button>' +
+        '<button class="btn-delete" title="Eliminar tarea">🗑️</button>' +
         '<div class="card-header">' +
             '<input type="checkbox" class="checkbox-complete" title="Marcar como completada"' + checkedAttr + '>' +
             '<h3>' + escapeHtml(task.nombre) + '</h3>' +
