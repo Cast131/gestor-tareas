@@ -7,25 +7,52 @@ var MONTHS = [
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
+var allTasks = [];
+var selectedFilterDate = null;
+var toastTimer = null;
+
+// ===== NAVEGACION SIDEBAR =====
+var sidebarBtns = document.querySelectorAll('.sidebar-btn');
+var panels = document.querySelectorAll('.panel');
+
+sidebarBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var panelId = this.dataset.panel;
+        sidebarBtns.forEach(function (b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        panels.forEach(function (p) { p.classList.remove('active'); });
+        document.getElementById('panel-' + panelId).classList.add('active');
+        if (panelId === 'actividades') {
+            renderActividadesCalendar();
+        }
+    });
+});
+
+// ===== TOAST =====
+function showToast(msg) {
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+        toast.classList.remove('show');
+    }, 2500);
+}
+
+// ===== CALENDARIO DEL FORMULARIO =====
 var dateInput = document.getElementById('fecha');
 var calendarDropdown = document.getElementById('calendar-dropdown');
 var calMonthYear = document.getElementById('cal-month-year');
 var calendarDays = document.getElementById('calendar-days');
 var calPrev = document.getElementById('cal-prev');
 var calNext = document.getElementById('cal-next');
-var form = document.getElementById('task-form');
-var tasksContainer = document.getElementById('tasks-container');
-var searchInput = document.getElementById('search-input');
-var filterStatus = document.getElementById('filter-status');
-var filterPriority = document.getElementById('filter-priority');
 
 var currentDate = new Date();
 var selectedDate = null;
 var currentMonth = currentDate.getMonth();
 var currentYear = currentDate.getFullYear();
-var allTasks = [];
 
-function renderCalendar() {
+function renderFormCalendar() {
     calendarDays.innerHTML = '';
     calMonthYear.textContent = MONTHS[currentMonth] + ' ' + currentYear;
 
@@ -65,15 +92,14 @@ function renderCalendar() {
 
             btn.addEventListener('click', function () {
                 selectedDate = new Date(currentYear, currentMonth, dayNum);
-                var formatted = selectedDate.toLocaleDateString('es-ES', {
+                dateInput.value = selectedDate.toLocaleDateString('es-ES', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                 });
-                dateInput.value = formatted;
                 dateInput.dataset.iso = selectedDate.toISOString().split('T')[0];
-                renderCalendar();
+                renderFormCalendar();
                 calendarDropdown.classList.remove('active');
             });
 
@@ -99,27 +125,21 @@ dateInput.addEventListener('click', function (e) {
         currentMonth = selectedDate.getMonth();
         currentYear = selectedDate.getFullYear();
     }
-    renderCalendar();
+    renderFormCalendar();
 });
 
 calPrev.addEventListener('click', function (e) {
     e.stopPropagation();
     currentMonth--;
-    if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-    }
-    renderCalendar();
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    renderFormCalendar();
 });
 
 calNext.addEventListener('click', function (e) {
     e.stopPropagation();
     currentMonth++;
-    if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-    }
-    renderCalendar();
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    renderFormCalendar();
 });
 
 document.addEventListener('click', function (e) {
@@ -128,6 +148,130 @@ document.addEventListener('click', function (e) {
     }
 });
 
+// ===== CALENDARIO DE ACTIVIDADES =====
+var actCalMonthYear = document.getElementById('act-cal-month-year');
+var actCalendarDays = document.getElementById('act-calendar-days');
+var actCalPrev = document.getElementById('act-cal-prev');
+var actCalNext = document.getElementById('act-cal-next');
+var btnClearDate = document.getElementById('btn-clear-date');
+var filterTitle = document.getElementById('filter-title');
+
+var actCurrentMonth = currentDate.getMonth();
+var actCurrentYear = currentDate.getFullYear();
+
+function getTasksForDay(day, month, year) {
+    return allTasks.filter(function (t) {
+        if (!t.fecha_iso) return false;
+        var parts = t.fecha_iso.split('-');
+        return parseInt(parts[0]) === year &&
+               parseInt(parts[1]) === month + 1 &&
+               parseInt(parts[2]) === day;
+    });
+}
+
+function renderActividadesCalendar() {
+    actCalendarDays.innerHTML = '';
+    actCalMonthYear.textContent = MONTHS[actCurrentMonth] + ' ' + actCurrentYear;
+
+    var firstDay = new Date(actCurrentYear, actCurrentMonth, 1).getDay();
+    var daysInMonth = new Date(actCurrentYear, actCurrentMonth + 1, 0).getDate();
+    var daysInPrevMonth = new Date(actCurrentYear, actCurrentMonth, 0).getDate();
+
+    for (var i = firstDay - 1; i >= 0; i--) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = daysInPrevMonth - i;
+        btn.className = 'other-month';
+        actCalendarDays.appendChild(btn);
+    }
+
+    for (var day = 1; day <= daysInMonth; day++) {
+        (function (dayNum) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = dayNum;
+
+            var isToday = (
+                dayNum === currentDate.getDate() &&
+                actCurrentMonth === currentDate.getMonth() &&
+                actCurrentYear === currentDate.getFullYear()
+            );
+            if (isToday) btn.classList.add('today');
+
+            var tasksOnDay = getTasksForDay(dayNum, actCurrentMonth, actCurrentYear);
+            if (tasksOnDay.length > 0) {
+                btn.classList.add('has-tasks');
+                btn.title = tasksOnDay.length + ' tarea(s)';
+            }
+
+            var dateStr = actCurrentYear + '-' +
+                String(actCurrentMonth + 1).padStart(2, '0') + '-' +
+                String(dayNum).padStart(2, '0');
+
+            if (selectedFilterDate === dateStr) {
+                btn.classList.add('date-active');
+            }
+
+            btn.addEventListener('click', function () {
+                if (selectedFilterDate === dateStr) {
+                    selectedFilterDate = null;
+                } else {
+                    selectedFilterDate = dateStr;
+                }
+                renderActividadesCalendar();
+                updateFilterTitle();
+                renderAllTaskCards();
+            });
+
+            actCalendarDays.appendChild(btn);
+        })(day);
+    }
+
+    var totalCells = firstDay + daysInMonth;
+    var remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+    for (var i = 1; i <= remaining; i++) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = i;
+        btn.className = 'other-month';
+        actCalendarDays.appendChild(btn);
+    }
+}
+
+actCalPrev.addEventListener('click', function () {
+    actCurrentMonth--;
+    if (actCurrentMonth < 0) { actCurrentMonth = 11; actCurrentYear--; }
+    renderActividadesCalendar();
+});
+
+actCalNext.addEventListener('click', function () {
+    actCurrentMonth++;
+    if (actCurrentMonth > 11) { actCurrentMonth = 0; actCurrentYear++; }
+    renderActividadesCalendar();
+});
+
+btnClearDate.addEventListener('click', function () {
+    selectedFilterDate = null;
+    renderActividadesCalendar();
+    updateFilterTitle();
+    renderAllTaskCards();
+});
+
+function updateFilterTitle() {
+    if (selectedFilterDate) {
+        var d = new Date(selectedFilterDate + 'T00:00:00');
+        filterTitle.textContent = d.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    } else {
+        filterTitle.textContent = 'Todas las tareas';
+    }
+}
+
+// ===== ESCAPADO HTML =====
 function escapeHtml(str) {
     if (!str) return '';
     var div = document.createElement('div');
@@ -135,6 +279,7 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+// ===== TARJETAS DE TAREAS =====
 function renderTaskCard(task) {
     var taskCard = document.createElement('div');
     taskCard.className = 'task-card';
@@ -146,7 +291,6 @@ function renderTaskCard(task) {
 
     var priorityLabel = { alta: 'Alta', media: 'Media', baja: 'Baja' };
     var prio = task.priority || 'media';
-
     var checkedAttr = task.completed ? ' checked' : '';
 
     taskCard.innerHTML =
@@ -173,7 +317,7 @@ function renderTaskCard(task) {
                 } else {
                     taskCard.classList.remove('completed');
                 }
-                applyFilters();
+                renderActividadesCalendar();
             });
     });
 
@@ -186,46 +330,56 @@ function renderTaskCard(task) {
             .then(function () {
                 taskCard.remove();
                 allTasks = allTasks.filter(function (t) { return t.id !== task.id; });
+                renderActividadesCalendar();
             });
     });
 
     return taskCard;
 }
 
-function applyFilters() {
+// ===== FILTROS =====
+var searchInput = document.getElementById('search-input');
+var filterStatus = document.getElementById('filter-status');
+var filterPriority = document.getElementById('filter-priority');
+
+function taskMatchesFilters(task) {
     var query = (searchInput.value || '').toLowerCase().trim();
     var status = filterStatus.value;
     var priority = filterPriority.value;
 
-    var cards = tasksContainer.querySelectorAll('.task-card');
-    cards.forEach(function (card) {
-        var id = parseInt(card.dataset.id);
-        var task = null;
-        for (var i = 0; i < allTasks.length; i++) {
-            if (allTasks[i].id === id) { task = allTasks[i]; break; }
+    if (selectedFilterDate) {
+        if (task.fecha_iso !== selectedFilterDate) return false;
+    }
+
+    if (query) {
+        var text = (task.nombre + ' ' + task.materia + ' ' + task.descripcion).toLowerCase();
+        if (text.indexOf(query) === -1) return false;
+    }
+
+    if (status === 'pendientes' && task.completed) return false;
+    if (status === 'completadas' && !task.completed) return false;
+
+    if (priority !== 'todas' && task.priority !== priority) return false;
+
+    return true;
+}
+
+function renderAllTaskCards() {
+    var container = document.getElementById('tasks-container');
+    container.innerHTML = '';
+
+    allTasks.forEach(function (task) {
+        if (taskMatchesFilters(task)) {
+            container.appendChild(renderTaskCard(task));
         }
-        if (!task) { card.style.display = ''; return; }
-
-        var show = true;
-
-        if (query) {
-            var text = (task.nombre + ' ' + task.materia + ' ' + task.descripcion).toLowerCase();
-            if (text.indexOf(query) === -1) show = false;
-        }
-
-        if (status === 'pendientes' && task.completed) show = false;
-        if (status === 'completadas' && !task.completed) show = false;
-
-        if (priority !== 'todas' && task.priority !== priority) show = false;
-
-        card.style.display = show ? '' : 'none';
     });
 }
 
-searchInput.addEventListener('input', applyFilters);
-filterStatus.addEventListener('change', applyFilters);
-filterPriority.addEventListener('change', applyFilters);
+searchInput.addEventListener('input', renderAllTaskCards);
+filterStatus.addEventListener('change', renderAllTaskCards);
+filterPriority.addEventListener('change', renderAllTaskCards);
 
+// ===== CARGA Y GUARDADO =====
 async function loadTasks() {
     var result = await supabaseClient
         .from('tareas')
@@ -238,11 +392,11 @@ async function loadTasks() {
     }
 
     allTasks = result.data;
-    tasksContainer.innerHTML = '';
-    allTasks.forEach(function (task) {
-        tasksContainer.appendChild(renderTaskCard(task));
-    });
+    renderAllTaskCards();
+    renderActividadesCalendar();
 }
+
+var form = document.getElementById('task-form');
 
 form.addEventListener('submit', async function (evento) {
     evento.preventDefault();
@@ -270,19 +424,24 @@ form.addEventListener('submit', async function (evento) {
 
     if (result.error) {
         console.error('Error al guardar tarea:', result.error);
+        showToast('Error al guardar la tarea');
         return;
     }
 
     allTasks.unshift(result.data);
-    tasksContainer.prepend(renderTaskCard(result.data));
+    renderAllTaskCards();
+    renderActividadesCalendar();
 
     form.reset();
     document.getElementById('prioridad').value = 'media';
     selectedDate = null;
     currentMonth = currentDate.getMonth();
     currentYear = currentDate.getFullYear();
-    renderCalendar();
-    applyFilters();
+    renderFormCalendar();
+
+    showToast('✅ Tarea guardada correctamente');
 });
 
+// ===== INICIO =====
 loadTasks();
+updateFilterTitle();

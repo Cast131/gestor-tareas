@@ -8,82 +8,118 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Gestor de Tareas</h1>
-            <p>Registro de actividades universitarias</p>
-        </header>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>Gestor de Tareas</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="sidebar-btn active" data-panel="nueva">
+                    <span class="sidebar-icon">+</span> Nueva tarea
+                </button>
+                <button class="sidebar-btn" data-panel="actividades">
+                    <span class="sidebar-icon">📋</span> Mis actividades
+                </button>
+            </nav>
+        </aside>
 
-        <section class="form-section">
-            <form id="task-form">
-                <div class="input-group">
-                    <label for="nombre">Nombre del estudiante</label>
-                    <input type="text" id="nombre" placeholder="Ej. Juan Pérez" required>
-                </div>
+        <main class="main-content">
+            <section id="panel-nueva" class="panel active">
+                <h1>Agregar Actividad</h1>
 
-                <div class="input-group">
-                    <label for="materia">Materia o Carrera</label>
-                    <input type="text" id="materia" placeholder="Ej. Cálculo I / Ingeniería" required>
-                </div>
-
-                <div class="input-group">
-                    <label for="tarea">Tarea a desarrollar</label>
-                    <textarea id="tarea" rows="3" placeholder="Describe lo que hay que hacer..." required></textarea>
-                </div>
-
-                <div class="input-group">
-                    <label for="fecha">Fecha de entrega</label>
-                    <div class="custom-datepicker">
-                        <input type="text" id="fecha" class="date-input" placeholder="Selecciona una fecha" readonly required>
-                        <div class="calendar-dropdown" id="calendar-dropdown">
-                            <div class="calendar-header">
-                                <button type="button" class="cal-nav cal-prev" id="cal-prev">&lt;</button>
-                                <span class="cal-month-year" id="cal-month-year"></span>
-                                <button type="button" class="cal-nav cal-next" id="cal-next">&gt;</button>
-                            </div>
-                            <div class="calendar-weekdays">
-                                <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
-                            </div>
-                            <div class="calendar-days" id="calendar-days"></div>
+                <div class="form-section">
+                    <form id="task-form">
+                        <div class="input-group">
+                            <label for="nombre">Nombre del estudiante</label>
+                            <input type="text" id="nombre" placeholder="Ej. Juan Pérez" required>
                         </div>
+
+                        <div class="input-group">
+                            <label for="materia">Materia o Carrera</label>
+                            <input type="text" id="materia" placeholder="Ej. Cálculo I / Ingeniería" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="tarea">Tarea a desarrollar</label>
+                            <textarea id="tarea" rows="3" placeholder="Describe lo que hay que hacer..." required></textarea>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="fecha">Fecha de entrega</label>
+                            <div class="custom-datepicker">
+                                <input type="text" id="fecha" class="date-input" placeholder="Selecciona una fecha" readonly required>
+                                <div class="calendar-dropdown" id="calendar-dropdown">
+                                    <div class="calendar-header">
+                                        <button type="button" class="cal-nav cal-prev" id="cal-prev">&lt;</button>
+                                        <span class="cal-month-year" id="cal-month-year"></span>
+                                        <button type="button" class="cal-nav cal-next" id="cal-next">&gt;</button>
+                                    </div>
+                                    <div class="calendar-weekdays">
+                                        <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+                                    </div>
+                                    <div class="calendar-days" id="calendar-days"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="prioridad">Prioridad</label>
+                            <select id="prioridad" class="select-priority">
+                                <option value="alta">Alta</option>
+                                <option value="media" selected>Media</option>
+                                <option value="baja">Baja</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Agregar Actividad</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="panel-actividades" class="panel">
+                <h1>Mis Actividades</h1>
+
+                <div class="actividades-calendar" id="actividades-calendar">
+                    <div class="calendar-header">
+                        <button type="button" class="cal-nav" id="act-cal-prev">&lt;</button>
+                        <span class="cal-month-year" id="act-cal-month-year"></span>
+                        <button type="button" class="cal-nav" id="act-cal-next">&gt;</button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+                    </div>
+                    <div class="calendar-days" id="act-calendar-days"></div>
+                    <div class="calendar-clear" id="calendar-clear">
+                        <button type="button" id="btn-clear-date">Ver todas las fechas</button>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label for="prioridad">Prioridad</label>
-                    <select id="prioridad" class="select-priority">
-                        <option value="alta">Alta</option>
-                        <option value="media" selected>Media</option>
-                        <option value="baja">Baja</option>
-                    </select>
+                <div class="task-list-section">
+                    <div class="filter-bar">
+                        <h2 id="filter-title">Todas las tareas</h2>
+                        <div class="filter-controls">
+                            <input type="text" id="search-input" class="search-input" placeholder="Buscar tarea...">
+                            <select id="filter-status" class="filter-select">
+                                <option value="todas">Todas</option>
+                                <option value="pendientes">Pendientes</option>
+                                <option value="completadas">Completadas</option>
+                            </select>
+                            <select id="filter-priority" class="filter-select">
+                                <option value="todas">Todas las prioridades</option>
+                                <option value="alta">Alta</option>
+                                <option value="media">Media</option>
+                                <option value="baja">Baja</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="tasks-container">
+                    </div>
                 </div>
-
-                <button type="submit" class="btn-submit">Agregar Actividad</button>
-            </form>
-        </section>
-
-        <section class="task-list-section">
-            <div class="filter-bar">
-                <h2>Actividades</h2>
-                <div class="filter-controls">
-                    <input type="text" id="search-input" class="search-input" placeholder="Buscar tarea...">
-                    <select id="filter-status" class="filter-select">
-                        <option value="todas">Todas</option>
-                        <option value="pendientes">Pendientes</option>
-                        <option value="completadas">Completadas</option>
-                    </select>
-                    <select id="filter-priority" class="filter-select">
-                        <option value="todas">Todas las prioridades</option>
-                        <option value="alta">Alta</option>
-                        <option value="media">Media</option>
-                        <option value="baja">Baja</option>
-                    </select>
-                </div>
-            </div>
-            <div id="tasks-container">
-            </div>
-        </section>
+            </section>
+        </main>
     </div>
+
+    <div id="toast" class="toast"></div>
 
     <script src="script.js"></script>
 </body>

@@ -8,25 +8,92 @@
 body {
     background-color: #f4f7f6;
     color: #333;
-    padding: 20px;
+    min-height: 100vh;
 }
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
+.layout {
+    display: flex;
+    min-height: 100vh;
 }
 
-header {
+.sidebar {
+    width: 230px;
+    background: #2c3e50;
+    color: #ecf0f1;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sidebar-brand {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-brand h2 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.sidebar-nav {
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    color: #bdc3c7;
+    font-size: 15px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-btn:hover {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+}
+
+.sidebar-btn.active {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border-left-color: #3498db;
+}
+
+.sidebar-icon {
+    font-size: 18px;
+    width: 24px;
     text-align: center;
-    margin-bottom: 30px;
 }
 
-header h1 {
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.panel {
+    display: none;
+}
+
+.panel.active {
+    display: block;
+}
+
+.panel h1 {
+    font-size: 22px;
     color: #2c3e50;
-}
-
-header p {
-    color: #7f8c8d;
+    margin-bottom: 20px;
 }
 
 .form-section {
@@ -35,6 +102,7 @@ header p {
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     margin-bottom: 30px;
+    max-width: 600px;
 }
 
 .input-group {
@@ -92,6 +160,71 @@ header p {
 
 .btn-submit:hover {
     background-color: #2980b9;
+}
+
+.actividades-calendar {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    max-width: 400px;
+}
+
+.actividades-calendar .calendar-header {
+    margin-bottom: 8px;
+}
+
+.actividades-calendar .cal-month-year {
+    font-size: 15px;
+}
+
+.calendar-clear {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.calendar-clear button {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #7f8c8d;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calendar-clear button:hover {
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.calendar-days button.has-tasks {
+    position: relative;
+    font-weight: 700;
+}
+
+.calendar-days button.has-tasks::after {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 5px;
+    background: #3498db;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.calendar-days button.date-active {
+    background: #3498db;
+    color: #fff;
+}
+
+.calendar-days button.date-active::after {
+    background: #fff;
 }
 
 .filter-bar {
@@ -368,4 +501,31 @@ header p {
 .calendar-days button.other-month {
     color: #ccc;
     cursor: default;
+}
+
+.calendar-days button.other-month.has-tasks::after {
+    background: #ccc;
+}
+
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #27ae60;
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
 }
