@@ -1213,3 +1213,127 @@ body {
 .btn-card-action.btn-delete-card:hover svg {
     stroke: #dc2626;
 }
+
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 200px;
+    }
+    .main-content {
+        padding: 24px 20px;
+        border-radius: 24px;
+    }
+    .actividades-layout {
+        flex-direction: column;
+        gap: 16px;
+    }
+    .actividades-calendar {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        padding: 0 12px;
+        min-height: 56px;
+    }
+    .sidebar-brand {
+        display: none;
+    }
+    .sidebar-nav {
+        flex-direction: row;
+        padding: 0;
+        gap: 2px;
+        width: 100%;
+        overflow-x: auto;
+    }
+    .sidebar-btn {
+        white-space: nowrap;
+        padding: 10px 12px;
+        font-size: 13px;
+        border-radius: 8px;
+        border-left: none;
+    }
+    .sidebar-svg {
+        width: 16px;
+        height: 16px;
+    }
+    .main-content {
+        margin: 10px;
+        border-radius: 20px;
+        padding: 20px 16px;
+    }
+    .panel h1 {
+        font-size: 20px;
+    }
+    .form-section {
+        max-width: 100%;
+    }
+    .actividades-layout {
+        flex-direction: column;
+        gap: 14px;
+    }
+    .actividades-calendar {
+        max-width: 100%;
+    }
+    .filter-controls {
+        flex-direction: column;
+    }
+    .search-input,
+    .filter-select {
+        flex: auto;
+        min-width: 0;
+        width: 100%;
+    }
+    .historial-filters {
+        flex-direction: column;
+    }
+    .historial-filters .filter-select {
+        flex: auto;
+        width: 100%;
+    }
+    .historial-table-wrapper {
+        margin: 0 -16px;
+        border-radius: 0;
+    }
+    .historial-table {
+        font-size: 13px;
+    }
+    .historial-table thead th,
+    .historial-table tbody td {
+        padding: 10px 8px;
+    }
+    .task-card {
+        padding: 16px;
+    }
+    .card-actions {
+        top: 10px;
+        right: 10px;
+    }
+    .btn-card-action {
+        width: 30px;
+        height: 30px;
+    }
+    .btn-card-action svg {
+        width: 14px;
+        height: 14px;
+    }
+    .modal-card {
+        max-width: 92%;
+        padding: 22px 20px;
+    }
+    .edit-modal-card {
+        max-width: 92%;
+    }
+    .clientes-add-row {
+        flex-direction: column;
+    }
+    .cliente-tel {
+        flex: auto;
+    }
+}

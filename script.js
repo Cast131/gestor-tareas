@@ -704,6 +704,11 @@ document.getElementById('btn-reset-data').addEventListener('click', function () 
     });
 });
 
+// ===== PWA =====
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js');
+}
+
 // ===== INICIO =====
 async function init() {
     await loadClients();
