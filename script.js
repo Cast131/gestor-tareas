@@ -104,6 +104,7 @@ function showToast(msg) {
 // ===== AUTOCOMPLETE CLIENTES =====
 var clienteInput = document.getElementById('cliente-input');
 var clienteIndicator = document.getElementById('cliente-indicator');
+var clienteSuggestions = document.getElementById('cliente-suggestions');
 var selectedClienteId = null;
 
 clienteInput.addEventListener('input', function () {
@@ -111,6 +112,8 @@ clienteInput.addEventListener('input', function () {
     selectedClienteId = null;
     clienteIndicator.className = 'cliente-indicator';
     clienteIndicator.textContent = '';
+    clienteSuggestions.innerHTML = '';
+    clienteSuggestions.classList.remove('active');
 
     if (!query) return;
 
@@ -122,9 +125,44 @@ clienteInput.addEventListener('input', function () {
         selectedClienteId = exact[0].id;
         clienteIndicator.className = 'cliente-indicator existe';
         clienteIndicator.textContent = '✅ Cliente existente';
+        return;
+    }
+
+    var matches = allClients.filter(function (c) {
+        return c.nombre.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+    });
+
+    if (matches.length > 0) {
+        matches.forEach(function (c) {
+            var item = document.createElement('div');
+            item.className = 'cliente-suggestion-item';
+            item.textContent = c.nombre;
+            item.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                clienteInput.value = c.nombre;
+                selectedClienteId = c.id;
+                clienteIndicator.className = 'cliente-indicator existe';
+                clienteIndicator.textContent = '✅ Cliente existente';
+                clienteSuggestions.classList.remove('active');
+            });
+            clienteSuggestions.appendChild(item);
+        });
+        clienteSuggestions.classList.add('active');
     } else {
         clienteIndicator.className = 'cliente-indicator nuevo';
         clienteIndicator.textContent = '🆕 Se creará un nuevo cliente';
+    }
+});
+
+clienteInput.addEventListener('blur', function () {
+    setTimeout(function () {
+        clienteSuggestions.classList.remove('active');
+    }, 200);
+});
+
+clienteInput.addEventListener('focus', function () {
+    if (clienteSuggestions.children.length > 0) {
+        clienteSuggestions.classList.add('active');
     }
 });
 

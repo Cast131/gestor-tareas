@@ -37,7 +37,10 @@
                     <form id="task-form">
                         <div class="input-group">
                             <label for="cliente-input">Cliente</label>
-                            <input type="text" id="cliente-input" class="cliente-autocomplete" placeholder="Escribe el nombre del cliente..." autocomplete="off" required>
+                            <div class="cliente-input-wrapper">
+                                <input type="text" id="cliente-input" class="cliente-autocomplete" placeholder="Escribe el nombre del cliente..." autocomplete="off" required>
+                                <div class="cliente-suggestions" id="cliente-suggestions"></div>
+                            </div>
                             <div class="cliente-indicator" id="cliente-indicator"></div>
                         </div>
 
