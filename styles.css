@@ -49,7 +49,7 @@ body {
 .sidebar-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
     padding: 13px 16px;
     background: none;
@@ -74,11 +74,16 @@ body {
     font-weight: 600;
 }
 
-.sidebar-icon {
-    font-size: 18px;
-    width: 24px;
-    text-align: center;
+.sidebar-svg {
+    width: 20px;
+    height: 20px;
     flex-shrink: 0;
+    opacity: 0.75;
+}
+
+.sidebar-btn.active .sidebar-svg,
+.sidebar-btn:hover .sidebar-svg {
+    opacity: 1;
 }
 
 .main-content {
@@ -1127,4 +1132,84 @@ body {
 .btn-reset-danger:hover {
     background: #dc2626;
     color: #fff;
+}
+
+.edit-modal-card {
+    max-width: 480px;
+    text-align: left;
+    padding: 28px 30px;
+}
+
+.edit-modal-title {
+    font-size: 18px;
+    color: #1e293b;
+    margin-bottom: 20px;
+}
+
+.edit-modal-body {
+    margin-bottom: 20px;
+}
+
+.edit-modal-body .input-group {
+    margin-bottom: 14px;
+}
+
+.edit-modal-body .input-group:last-child {
+    margin-bottom: 0;
+}
+
+.edit-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.card-actions {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    gap: 6px;
+}
+
+.btn-card-action {
+    width: 34px;
+    height: 34px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.btn-card-action svg {
+    width: 16px;
+    height: 16px;
+    stroke: #94a3b8;
+}
+
+.btn-card-action:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.btn-card-action.btn-edit:hover {
+    border-color: #2b6cb0;
+    background: #eff6ff;
+}
+
+.btn-card-action.btn-edit:hover svg {
+    stroke: #2b6cb0;
+}
+
+.btn-card-action.btn-delete-card:hover {
+    border-color: #dc2626;
+    background: #fee2e2;
+}
+
+.btn-card-action.btn-delete-card:hover svg {
+    stroke: #dc2626;
 }

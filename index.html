@@ -15,16 +15,20 @@
             </div>
             <nav class="sidebar-nav">
                 <button class="sidebar-btn active" data-panel="nueva">
-                    <span class="sidebar-icon">+</span> Nueva tarea
+                    <svg class="sidebar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Nueva tarea
                 </button>
                 <button class="sidebar-btn" data-panel="actividades">
-                    <span class="sidebar-icon">📋</span> Mis actividades
+                    <svg class="sidebar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    Mis actividades
                 </button>
                 <button class="sidebar-btn" data-panel="historial">
-                    <span class="sidebar-icon">📊</span> Historial
+                    <svg class="sidebar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                    Historial
                 </button>
                 <button class="sidebar-btn" data-panel="ajustes">
-                    <span class="sidebar-icon">⚙️</span> Ajustes
+                    <svg class="sidebar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M1 12h2M21 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                    Ajustes
                 </button>
             </nav>
         </aside>
@@ -175,7 +179,7 @@
                     <div class="ajustes-card ajustes-danger">
                         <div class="ajustes-card-header">
                             <h3>Restablecer datos</h3>
-                            <p>Elimina permanentemente todas las tareas y clientes registrados. Esta acción no se puede deshacer.</p>
+                            <p>Elimina permanentemente todas las tareas y clientes registrados. Esta acci&oacute;n no se puede deshacer.</p>
                         </div>
                         <button type="button" id="btn-reset-data" class="btn-reset-danger">Restablecer todos los datos</button>
                     </div>
@@ -190,6 +194,34 @@
         <div class="modal-card" id="modal-card">
             <p class="modal-message" id="modal-message"></p>
             <div class="modal-actions" id="modal-actions"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="edit-modal-overlay">
+        <div class="modal-card edit-modal-card">
+            <h3 class="edit-modal-title">Editar Actividad</h3>
+            <div class="edit-modal-body">
+                <div class="input-group">
+                    <label for="edit-materia">Materia o Carrera</label>
+                    <input type="text" id="edit-materia" required>
+                </div>
+                <div class="input-group">
+                    <label for="edit-descripcion">Descripci&oacute;n</label>
+                    <textarea id="edit-descripcion" rows="3" required></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="edit-prioridad">Prioridad</label>
+                    <select id="edit-prioridad" class="select-priority">
+                        <option value="alta">Alta</option>
+                        <option value="media">Media</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </div>
+            </div>
+            <div class="edit-modal-actions">
+                <button type="button" class="modal-btn-cancel" id="edit-modal-cancel">Cancelar</button>
+                <button type="button" class="modal-btn-ok" id="edit-modal-save">Guardar cambios</button>
+            </div>
         </div>
     </div>
 

@@ -124,7 +124,7 @@ clienteInput.addEventListener('input', function () {
     if (exact.length > 0) {
         selectedClienteId = exact[0].id;
         clienteIndicator.className = 'cliente-indicator existe';
-        clienteIndicator.textContent = '✅ Cliente existente';
+        clienteIndicator.textContent = '✓ Cliente existente';
         return;
     }
 
@@ -142,7 +142,7 @@ clienteInput.addEventListener('input', function () {
                 clienteInput.value = c.nombre;
                 selectedClienteId = c.id;
                 clienteIndicator.className = 'cliente-indicator existe';
-                clienteIndicator.textContent = '✅ Cliente existente';
+                clienteIndicator.textContent = '✓ Cliente existente';
                 clienteSuggestions.classList.remove('active');
             });
             clienteSuggestions.appendChild(item);
@@ -150,7 +150,7 @@ clienteInput.addEventListener('input', function () {
         clienteSuggestions.classList.add('active');
     } else {
         clienteIndicator.className = 'cliente-indicator nuevo';
-        clienteIndicator.textContent = '🆕 Se creará un nuevo cliente';
+        clienteIndicator.textContent = '+ Se crear\u00e1 un nuevo cliente';
     }
 });
 
@@ -408,15 +408,22 @@ function renderTaskCard(task) {
     var clienteName = task.cliente_id ? getClienteName(task.cliente_id) : (task.nombre || 'Sin cliente');
 
     taskCard.innerHTML =
-        '<button class="btn-delete" title="Eliminar tarea">🗑️</button>' +
+        '<div class="card-actions">' +
+            '<button class="btn-card-action btn-edit" title="Editar">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+            '</button>' +
+            '<button class="btn-card-action btn-delete-card" title="Eliminar">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+            '</button>' +
+        '</div>' +
         '<div class="card-header">' +
             '<input type="checkbox" class="checkbox-complete" title="Marcar como completada"' + checkedAttr + '>' +
             '<h3>' + escapeHtml(clienteName) + '</h3>' +
             '<span class="priority-badge priority-' + prio + '">' + (priorityLabel[prio] || 'Media') + '</span>' +
         '</div>' +
-        '<p class="materia"><span role="img" aria-label="libro">📚</span> ' + escapeHtml(task.materia) + '</p>' +
+        '<p class="materia">' + escapeHtml(task.materia) + '</p>' +
         '<p class="descripcion">' + escapeHtml(task.descripcion) + '</p>' +
-        '<p class="fecha"><span role="img" aria-label="calendario">📅</span> Entrega: ' + escapeHtml(task.fecha) + '</p>';
+        '<p class="fecha">Entrega: ' + escapeHtml(task.fecha) + '</p>';
 
     taskCard.querySelector('.checkbox-complete').addEventListener('change', function () {
         var newCompleted = this.checked;
@@ -428,7 +435,7 @@ function renderTaskCard(task) {
         });
     });
 
-    taskCard.querySelector('.btn-delete').addEventListener('click', function () {
+    taskCard.querySelector('.btn-delete-card').addEventListener('click', function () {
         showConfirm('¿Eliminar esta actividad?', function () {
             supabaseClient.from('tareas').delete().eq('id', task.id).then(function () {
                 taskCard.remove();
@@ -439,8 +446,72 @@ function renderTaskCard(task) {
         });
     });
 
+    taskCard.querySelector('.btn-edit').addEventListener('click', function () {
+        openEditModal(task);
+    });
+
     return taskCard;
 }
+
+// ===== EDITAR TAREA =====
+var editModalOverlay = document.getElementById('edit-modal-overlay');
+var editingTaskId = null;
+
+function openEditModal(task) {
+    editingTaskId = task.id;
+    document.getElementById('edit-materia').value = task.materia;
+    document.getElementById('edit-descripcion').value = task.descripcion;
+    document.getElementById('edit-prioridad').value = task.priority || 'media';
+    editModalOverlay.classList.add('active');
+}
+
+document.getElementById('edit-modal-cancel').addEventListener('click', function () {
+    editModalOverlay.classList.remove('active');
+    editingTaskId = null;
+});
+
+editModalOverlay.addEventListener('click', function (e) {
+    if (e.target === editModalOverlay) {
+        editModalOverlay.classList.remove('active');
+        editingTaskId = null;
+    }
+});
+
+document.getElementById('edit-modal-save').addEventListener('click', async function () {
+    var materia = document.getElementById('edit-materia').value.trim();
+    var descripcion = document.getElementById('edit-descripcion').value.trim();
+    var prioridad = document.getElementById('edit-prioridad').value;
+
+    if (!materia || !descripcion) {
+        showToast('Completa todos los campos');
+        return;
+    }
+
+    var result = await supabaseClient
+        .from('tareas')
+        .update({ materia: materia, descripcion: descripcion, priority: prioridad })
+        .eq('id', editingTaskId);
+
+    if (result.error) {
+        showToast('Error al actualizar');
+        return;
+    }
+
+    for (var i = 0; i < allTasks.length; i++) {
+        if (allTasks[i].id === editingTaskId) {
+            allTasks[i].materia = materia;
+            allTasks[i].descripcion = descripcion;
+            allTasks[i].priority = prioridad;
+            break;
+        }
+    }
+
+    editModalOverlay.classList.remove('active');
+    editingTaskId = null;
+    renderAllTaskCards();
+    renderActividadesCalendar();
+    showToast('Actividad actualizada');
+});
 
 // ===== FILTROS =====
 var searchInput = document.getElementById('search-input');
@@ -513,7 +584,7 @@ function renderHistorial() {
             '<td class="td-fecha">' + escapeHtml(t.fecha) + '</td>' +
             '<td><span class="priority-badge priority-' + (t.priority || 'media') + '">' + (priorityLabel[t.priority] || 'Media') + '</span></td>' +
             '<td>' + estadoHtml + '</td>' +
-            '<td><button class="btn-table-delete" title="Eliminar">🗑️</button></td>';
+            '<td><button class="btn-table-delete" title="Eliminar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>';
 
         tr.querySelector('.btn-table-delete').addEventListener('click', function () {
             showConfirm('¿Eliminar esta actividad?', function () {
@@ -614,7 +685,7 @@ form.addEventListener('submit', async function (evento) {
     currentYear = currentDate.getFullYear();
     renderFormCalendar();
 
-    showToast('✅ Tarea guardada correctamente');
+    showToast('Tarea guardada correctamente');
 });
 
 // ===== AJUSTES: RESET =====
