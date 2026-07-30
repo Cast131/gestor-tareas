@@ -20,11 +20,11 @@
                 <button class="sidebar-btn" data-panel="actividades">
                     <span class="sidebar-icon">📋</span> Mis actividades
                 </button>
-                <button class="sidebar-btn" data-panel="clientes">
-                    <span class="sidebar-icon">👥</span> Clientes
-                </button>
                 <button class="sidebar-btn" data-panel="historial">
                     <span class="sidebar-icon">📊</span> Historial
+                </button>
+                <button class="sidebar-btn" data-panel="ajustes">
+                    <span class="sidebar-icon">⚙️</span> Ajustes
                 </button>
             </nav>
         </aside>
@@ -36,23 +36,10 @@
                 <div class="form-section">
                     <form id="task-form">
                         <div class="input-group">
-                            <label for="cliente-select">Cliente</label>
-                            <div class="cliente-select-row">
-                                <select id="cliente-select" required>
-                                    <option value="">Selecciona un cliente...</option>
-                                </select>
-                                <button type="button" id="btn-add-cliente-inline" class="btn-add-inline" title="Agregar cliente">+</button>
-                            </div>
-                        </div>
-
-                        <div class="input-group" id="inline-cliente-form" style="display:none;">
-                            <div class="inline-form-row">
-                                <input type="text" id="inline-nombre" placeholder="Nombre del cliente" class="inline-input">
-                                <input type="text" id="inline-telefono" placeholder="Teléfono (opcional)" class="inline-input inline-tel">
-                            </div>
-                            <div class="inline-form-actions">
-                                <button type="button" id="btn-save-inline" class="btn-save-inline">Guardar</button>
-                                <button type="button" id="btn-cancel-inline" class="btn-cancel-inline">Cancelar</button>
+                            <label for="cliente-input">Cliente</label>
+                            <div class="autocomplete-wrapper">
+                                <input type="text" id="cliente-input" class="cliente-autocomplete" placeholder="Escribe el nombre del cliente..." autocomplete="off" required>
+                                <div class="autocomplete-dropdown" id="autocomplete-dropdown"></div>
                             </div>
                         </div>
 
@@ -141,19 +128,6 @@
                 </div>
             </section>
 
-            <section id="panel-clientes" class="panel">
-                <h1>Clientes</h1>
-
-                <div class="clientes-add-row">
-                    <input type="text" id="cliente-nombre" placeholder="Nombre del cliente" class="cliente-input">
-                    <input type="text" id="cliente-telefono" placeholder="Teléfono (opcional)" class="cliente-input cliente-tel">
-                    <button type="button" id="btn-add-cliente" class="btn-add-cliente">Agregar cliente</button>
-                </div>
-
-                <div class="clientes-list" id="clientes-list">
-                </div>
-            </section>
-
             <section id="panel-historial" class="panel">
                 <h1>Historial de Actividades</h1>
 
@@ -192,10 +166,31 @@
                     </table>
                 </div>
             </section>
+
+            <section id="panel-ajustes" class="panel">
+                <h1>Ajustes</h1>
+
+                <div class="ajustes-section">
+                    <div class="ajustes-card ajustes-danger">
+                        <div class="ajustes-card-header">
+                            <h3>Restablecer datos</h3>
+                            <p>Elimina permanentemente todas las tareas y clientes registrados. Esta acción no se puede deshacer.</p>
+                        </div>
+                        <button type="button" id="btn-reset-data" class="btn-reset-danger">Restablecer todos los datos</button>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
     <div id="toast" class="toast"></div>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-card" id="modal-card">
+            <p class="modal-message" id="modal-message"></p>
+            <div class="modal-actions" id="modal-actions"></div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

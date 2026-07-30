@@ -24,6 +24,45 @@ function getClienteName(clienteId) {
     return 'Sin cliente';
 }
 
+// ===== MODAL CUSTOM =====
+var modalOverlay = document.getElementById('modal-overlay');
+var modalMessage = document.getElementById('modal-message');
+var modalActions = document.getElementById('modal-actions');
+
+function showConfirm(msg, onConfirm) {
+    modalMessage.textContent = msg;
+    modalActions.innerHTML =
+        '<button class="modal-btn-cancel" id="modal-btn-no">Cancelar</button>' +
+        '<button class="modal-btn-confirm" id="modal-btn-si">Eliminar</button>';
+    modalOverlay.classList.add('active');
+
+    document.getElementById('modal-btn-no').addEventListener('click', closeModal);
+    document.getElementById('modal-btn-si').addEventListener('click', function () {
+        closeModal();
+        onConfirm();
+    });
+}
+
+function showAlert(msg, onOk) {
+    modalMessage.textContent = msg;
+    modalActions.innerHTML =
+        '<button class="modal-btn-ok" id="modal-btn-ok">Aceptar</button>';
+    modalOverlay.classList.add('active');
+
+    document.getElementById('modal-btn-ok').addEventListener('click', function () {
+        closeModal();
+        if (onOk) onOk();
+    });
+}
+
+function closeModal() {
+    modalOverlay.classList.remove('active');
+}
+
+modalOverlay.addEventListener('click', function (e) {
+    if (e.target === modalOverlay) closeModal();
+});
+
 // ===== NAVEGACION SIDEBAR =====
 var sidebarBtns = document.querySelectorAll('.sidebar-btn');
 var panels = document.querySelectorAll('.panel');
@@ -62,6 +101,99 @@ function showToast(msg) {
     }, 2500);
 }
 
+// ===== AUTOCOMPLETE CLIENTES =====
+var clienteInput = document.getElementById('cliente-input');
+var autocompleteDropdown = document.getElementById('autocomplete-dropdown');
+var selectedClienteId = null;
+var autocompleteIndex = -1;
+
+clienteInput.addEventListener('input', function () {
+    var query = this.value.trim().toLowerCase();
+    autocompleteDropdown.innerHTML = '';
+    autocompleteIndex = -1;
+    selectedClienteId = null;
+
+    if (!query) {
+        autocompleteDropdown.classList.remove('active');
+        return;
+    }
+
+    var matches = allClients.filter(function (c) {
+        return c.nombre.toLowerCase().indexOf(query) !== -1;
+    });
+
+    if (matches.length === 0) {
+        autocompleteDropdown.classList.remove('active');
+        return;
+    }
+
+    matches.forEach(function (c, idx) {
+        var item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.textContent = c.nombre;
+        item.addEventListener('mousedown', function () {
+            clienteInput.value = c.nombre;
+            selectedClienteId = c.id;
+            autocompleteDropdown.classList.remove('active');
+        });
+        autocompleteDropdown.appendChild(item);
+    });
+    autocompleteDropdown.classList.add('active');
+});
+
+clienteInput.addEventListener('keydown', function (e) {
+    var items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
+    if (!items.length) return;
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        autocompleteIndex = Math.min(autocompleteIndex + 1, items.length - 1);
+        updateAutocompleteSelection(items);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        autocompleteIndex = Math.max(autocompleteIndex - 1, -1);
+        updateAutocompleteSelection(items);
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (autocompleteIndex >= 0 && autocompleteIndex < items.length) {
+            var sel = items[autocompleteIndex];
+            clienteInput.value = sel.textContent;
+            for (var i = 0; i < allClients.length; i++) {
+                if (allClients[i].nombre === sel.textContent) {
+                    selectedClienteId = allClients[i].id;
+                    break;
+                }
+            }
+        }
+        autocompleteDropdown.classList.remove('active');
+    } else if (e.key === 'Escape') {
+        autocompleteDropdown.classList.remove('active');
+        autocompleteIndex = -1;
+    }
+});
+
+function updateAutocompleteSelection(items) {
+    items.forEach(function (item, idx) {
+        if (idx === autocompleteIndex) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    });
+}
+
+clienteInput.addEventListener('blur', function () {
+    setTimeout(function () {
+        autocompleteDropdown.classList.remove('active');
+    }, 150);
+});
+
+document.addEventListener('click', function (e) {
+    if (!clienteInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+        autocompleteDropdown.classList.remove('active');
+    }
+});
+
 // ===== CALENDARIO DEL FORMULARIO =====
 var dateInput = document.getElementById('fecha');
 var calendarDropdown = document.getElementById('calendar-dropdown');
@@ -96,36 +228,25 @@ function renderFormCalendar() {
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.textContent = dayNum;
-
             var isToday = (
                 dayNum === currentDate.getDate() &&
                 currentMonth === currentDate.getMonth() &&
                 currentYear === currentDate.getFullYear()
             );
             if (isToday) btn.classList.add('today');
-
-            if (
-                selectedDate &&
-                dayNum === selectedDate.getDate() &&
-                currentMonth === selectedDate.getMonth() &&
-                currentYear === selectedDate.getFullYear()
-            ) {
+            if (selectedDate && dayNum === selectedDate.getDate() &&
+                currentMonth === selectedDate.getMonth() && currentYear === selectedDate.getFullYear()) {
                 btn.classList.add('selected');
             }
-
             btn.addEventListener('click', function () {
                 selectedDate = new Date(currentYear, currentMonth, dayNum);
                 dateInput.value = selectedDate.toLocaleDateString('es-ES', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
                 });
                 dateInput.dataset.iso = selectedDate.toISOString().split('T')[0];
                 renderFormCalendar();
                 calendarDropdown.classList.remove('active');
             });
-
             calendarDays.appendChild(btn);
         })(day);
     }
@@ -171,32 +292,15 @@ document.addEventListener('click', function (e) {
     }
 });
 
-// ===== CLIENTES =====
+// ===== CARGA DE CLIENTES =====
 async function loadClients() {
     var result = await supabaseClient
         .from('clientes')
         .select('*')
         .order('nombre', { ascending: true });
-
-    if (result.error) {
-        console.error('Error al cargar clientes:', result.error);
-        return;
-    }
+    if (result.error) return;
     allClients = result.data;
-    populateClienteSelect();
     populateHistorialClienteFilter();
-    renderClientesList();
-}
-
-function populateClienteSelect() {
-    var sel = document.getElementById('cliente-select');
-    sel.innerHTML = '<option value="">Selecciona un cliente...</option>';
-    allClients.forEach(function (c) {
-        var opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.nombre;
-        sel.appendChild(opt);
-    });
 }
 
 function populateHistorialClienteFilter() {
@@ -209,126 +313,6 @@ function populateHistorialClienteFilter() {
         sel.appendChild(opt);
     });
 }
-
-function renderClientesList() {
-    var container = document.getElementById('clientes-list');
-    container.innerHTML = '';
-    if (allClients.length === 0) {
-        container.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:30px;">No hay clientes registrados</p>';
-        return;
-    }
-    allClients.forEach(function (c) {
-        var card = document.createElement('div');
-        card.className = 'cliente-card';
-        card.innerHTML =
-            '<div class="cliente-card-info">' +
-                '<span class="cliente-nombre">' + escapeHtml(c.nombre) + '</span>' +
-                '<span class="cliente-telefono">' + (c.telefono ? escapeHtml(c.telefono) : 'Sin teléfono') + '</span>' +
-            '</div>' +
-            '<div class="cliente-card-actions">' +
-                '<button class="btn-edit-cliente" data-id="' + c.id + '">Editar</button>' +
-                '<button class="btn-del-cliente" data-id="' + c.id + '">Eliminar</button>' +
-            '</div>';
-        container.appendChild(card);
-    });
-
-    container.querySelectorAll('.btn-del-cliente').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var id = parseInt(this.dataset.id);
-            if (!confirm('¿Eliminar este cliente?')) return;
-            supabaseClient.from('clientes').delete().eq('id', id).then(function () {
-                allClients = allClients.filter(function (c) { return c.id !== id; });
-                populateClienteSelect();
-                populateHistorialClienteFilter();
-                renderClientesList();
-                showToast('Cliente eliminado');
-            });
-        });
-    });
-
-    container.querySelectorAll('.btn-edit-cliente').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var id = parseInt(this.dataset.id);
-            var cliente = null;
-            for (var i = 0; i < allClients.length; i++) {
-                if (allClients[i].id === id) { cliente = allClients[i]; break; }
-            }
-            if (!cliente) return;
-            var nombre = prompt('Nombre:', cliente.nombre);
-            if (!nombre || !nombre.trim()) return;
-            var telefono = prompt('Teléfono:', cliente.telefono || '');
-            supabaseClient.from('clientes').update({
-                nombre: nombre.trim(),
-                telefono: telefono.trim() || null
-            }).eq('id', id).then(function () {
-                loadClients();
-                showToast('Cliente actualizado');
-            });
-        });
-    });
-}
-
-document.getElementById('btn-add-cliente').addEventListener('click', async function () {
-    var nombre = document.getElementById('cliente-nombre').value.trim();
-    if (!nombre) { showToast('Ingresa un nombre'); return; }
-    var telefono = document.getElementById('cliente-telefono').value.trim();
-
-    var result = await supabaseClient
-        .from('clientes')
-        .insert([{ nombre: nombre, telefono: telefono || null }])
-        .select()
-        .single();
-
-    if (result.error) {
-        showToast('Error al guardar cliente');
-        return;
-    }
-    allClients.push(result.data);
-    document.getElementById('cliente-nombre').value = '';
-    document.getElementById('cliente-telefono').value = '';
-    populateClienteSelect();
-    populateHistorialClienteFilter();
-    renderClientesList();
-    showToast('Cliente agregado');
-});
-
-// Inline add cliente
-document.getElementById('btn-add-cliente-inline').addEventListener('click', function () {
-    var formEl = document.getElementById('inline-cliente-form');
-    formEl.style.display = formEl.style.display === 'none' ? 'block' : 'none';
-});
-
-document.getElementById('btn-cancel-inline').addEventListener('click', function () {
-    document.getElementById('inline-cliente-form').style.display = 'none';
-    document.getElementById('inline-nombre').value = '';
-    document.getElementById('inline-telefono').value = '';
-});
-
-document.getElementById('btn-save-inline').addEventListener('click', async function () {
-    var nombre = document.getElementById('inline-nombre').value.trim();
-    if (!nombre) { showToast('Ingresa un nombre'); return; }
-    var telefono = document.getElementById('inline-telefono').value.trim();
-
-    var result = await supabaseClient
-        .from('clientes')
-        .insert([{ nombre: nombre, telefono: telefono || null }])
-        .select()
-        .single();
-
-    if (result.error) {
-        showToast('Error al guardar cliente');
-        return;
-    }
-    allClients.push(result.data);
-    populateClienteSelect();
-    populateHistorialClienteFilter();
-    renderClientesList();
-    document.getElementById('cliente-select').value = result.data.id;
-    document.getElementById('inline-cliente-form').style.display = 'none';
-    document.getElementById('inline-nombre').value = '';
-    document.getElementById('inline-telefono').value = '';
-    showToast('Cliente agregado');
-});
 
 // ===== CALENDARIO DE ACTIVIDADES =====
 var actCalMonthYear = document.getElementById('act-cal-month-year');
@@ -345,9 +329,7 @@ function getTasksForDay(day, month, year) {
     return allTasks.filter(function (t) {
         if (!t.fecha_iso) return false;
         var parts = t.fecha_iso.split('-');
-        return parseInt(parts[0]) === year &&
-               parseInt(parts[1]) === month + 1 &&
-               parseInt(parts[2]) === day;
+        return parseInt(parts[0]) === year && parseInt(parts[1]) === month + 1 && parseInt(parts[2]) === day;
     });
 }
 
@@ -372,12 +354,7 @@ function renderActividadesCalendar() {
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.textContent = dayNum;
-
-            var isToday = (
-                dayNum === currentDate.getDate() &&
-                actCurrentMonth === currentDate.getMonth() &&
-                actCurrentYear === currentDate.getFullYear()
-            );
+            var isToday = dayNum === currentDate.getDate() && actCurrentMonth === currentDate.getMonth() && actCurrentYear === currentDate.getFullYear();
             if (isToday) btn.classList.add('today');
 
             var tasksOnDay = getTasksForDay(dayNum, actCurrentMonth, actCurrentYear);
@@ -386,25 +363,15 @@ function renderActividadesCalendar() {
                 btn.title = tasksOnDay.length + ' tarea(s)';
             }
 
-            var dateStr = actCurrentYear + '-' +
-                String(actCurrentMonth + 1).padStart(2, '0') + '-' +
-                String(dayNum).padStart(2, '0');
-
-            if (selectedFilterDate === dateStr) {
-                btn.classList.add('date-active');
-            }
+            var dateStr = actCurrentYear + '-' + String(actCurrentMonth + 1).padStart(2, '0') + '-' + String(dayNum).padStart(2, '0');
+            if (selectedFilterDate === dateStr) btn.classList.add('date-active');
 
             btn.addEventListener('click', function () {
-                if (selectedFilterDate === dateStr) {
-                    selectedFilterDate = null;
-                } else {
-                    selectedFilterDate = dateStr;
-                }
+                selectedFilterDate = selectedFilterDate === dateStr ? null : dateStr;
                 renderActividadesCalendar();
                 updateFilterTitle();
                 renderAllTaskCards();
             });
-
             actCalendarDays.appendChild(btn);
         })(day);
     }
@@ -442,18 +409,13 @@ btnClearDate.addEventListener('click', function () {
 function updateFilterTitle() {
     if (selectedFilterDate) {
         var d = new Date(selectedFilterDate + 'T00:00:00');
-        filterTitle.textContent = d.toLocaleDateString('es-ES', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        });
+        filterTitle.textContent = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     } else {
         filterTitle.textContent = 'Todas las tareas';
     }
 }
 
-// ===== ESCAPADO HTML =====
+// ===== ESCAPADO =====
 function escapeHtml(str) {
     if (!str) return '';
     var div = document.createElement('div');
@@ -461,15 +423,12 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// ===== TARJETAS DE TAREAS =====
+// ===== TARJETAS =====
 function renderTaskCard(task) {
     var taskCard = document.createElement('div');
     taskCard.className = 'task-card';
     taskCard.dataset.id = task.id;
-
-    if (task.completed) {
-        taskCard.classList.add('completed');
-    }
+    if (task.completed) taskCard.classList.add('completed');
 
     var priorityLabel = { alta: 'Alta', media: 'Media', baja: 'Baja' };
     var prio = task.priority || 'media';
@@ -489,32 +448,23 @@ function renderTaskCard(task) {
 
     taskCard.querySelector('.checkbox-complete').addEventListener('change', function () {
         var newCompleted = this.checked;
-        supabaseClient
-            .from('tareas')
-            .update({ completed: newCompleted })
-            .eq('id', task.id)
-            .then(function () {
-                task.completed = newCompleted;
-                if (newCompleted) {
-                    taskCard.classList.add('completed');
-                } else {
-                    taskCard.classList.remove('completed');
-                }
-                renderActividadesCalendar();
-            });
+        supabaseClient.from('tareas').update({ completed: newCompleted }).eq('id', task.id).then(function () {
+            task.completed = newCompleted;
+            if (newCompleted) taskCard.classList.add('completed');
+            else taskCard.classList.remove('completed');
+            renderActividadesCalendar();
+        });
     });
 
     taskCard.querySelector('.btn-delete').addEventListener('click', function () {
-        if (!confirm('¿Eliminar esta tarea?')) return;
-        supabaseClient
-            .from('tareas')
-            .delete()
-            .eq('id', task.id)
-            .then(function () {
+        showConfirm('¿Eliminar esta actividad?', function () {
+            supabaseClient.from('tareas').delete().eq('id', task.id).then(function () {
                 taskCard.remove();
                 allTasks = allTasks.filter(function (t) { return t.id !== task.id; });
                 renderActividadesCalendar();
+                showToast('Actividad eliminada');
             });
+        });
     });
 
     return taskCard;
@@ -530,13 +480,11 @@ function taskMatchesFilters(task) {
     var status = filterStatus.value;
     var priority = filterPriority.value;
 
-    if (selectedFilterDate) {
-        if (task.fecha_iso !== selectedFilterDate) return false;
-    }
+    if (selectedFilterDate && task.fecha_iso !== selectedFilterDate) return false;
 
     if (query) {
-        var clienteName = task.cliente_id ? getClienteName(task.cliente_id) : (task.nombre || '');
-        var text = (clienteName + ' ' + task.materia + ' ' + task.descripcion).toLowerCase();
+        var cn = task.cliente_id ? getClienteName(task.cliente_id) : (task.nombre || '');
+        var text = (cn + ' ' + task.materia + ' ' + task.descripcion).toLowerCase();
         if (text.indexOf(query) === -1) return false;
     }
 
@@ -551,9 +499,7 @@ function renderAllTaskCards() {
     var container = document.getElementById('tasks-container');
     container.innerHTML = '';
     allTasks.forEach(function (task) {
-        if (taskMatchesFilters(task)) {
-            container.appendChild(renderTaskCard(task));
-        }
+        if (taskMatchesFilters(task)) container.appendChild(renderTaskCard(task));
     });
 }
 
@@ -561,7 +507,7 @@ searchInput.addEventListener('input', renderAllTaskCards);
 filterStatus.addEventListener('change', renderAllTaskCards);
 filterPriority.addEventListener('change', renderAllTaskCards);
 
-// ===== HISTORIAL (TABLA) =====
+// ===== HISTORIAL =====
 function renderHistorial() {
     var tbody = document.getElementById('historial-tbody');
     var clienteFilter = document.getElementById('historial-cliente-filter').value;
@@ -586,13 +532,10 @@ function renderHistorial() {
 
     tasks.forEach(function (t) {
         var tr = document.createElement('tr');
-        var clienteName = t.cliente_id ? getClienteName(t.cliente_id) : (t.nombre || '-');
-        var estadoHtml = t.completed
-            ? '<span class="estado-completada">Completada</span>'
-            : '<span class="estado-pendiente">Pendiente</span>';
-
+        var cn = t.cliente_id ? getClienteName(t.cliente_id) : (t.nombre || '-');
+        var estadoHtml = t.completed ? '<span class="estado-completada">Completada</span>' : '<span class="estado-pendiente">Pendiente</span>';
         tr.innerHTML =
-            '<td class="td-cliente">' + escapeHtml(clienteName) + '</td>' +
+            '<td class="td-cliente">' + escapeHtml(cn) + '</td>' +
             '<td>' + escapeHtml(t.materia) + '</td>' +
             '<td>' + escapeHtml(t.descripcion) + '</td>' +
             '<td class="td-fecha">' + escapeHtml(t.fecha) + '</td>' +
@@ -601,12 +544,14 @@ function renderHistorial() {
             '<td><button class="btn-table-delete" title="Eliminar">🗑️</button></td>';
 
         tr.querySelector('.btn-table-delete').addEventListener('click', function () {
-            if (!confirm('¿Eliminar esta actividad?')) return;
-            supabaseClient.from('tareas').delete().eq('id', t.id).then(function () {
-                allTasks = allTasks.filter(function (x) { return x.id !== t.id; });
-                renderHistorial();
-                renderAllTaskCards();
-                renderActividadesCalendar();
+            showConfirm('¿Eliminar esta actividad?', function () {
+                supabaseClient.from('tareas').delete().eq('id', t.id).then(function () {
+                    allTasks = allTasks.filter(function (x) { return x.id !== t.id; });
+                    renderHistorial();
+                    renderAllTaskCards();
+                    renderActividadesCalendar();
+                    showToast('Actividad eliminada');
+                });
             });
         });
 
@@ -624,12 +569,7 @@ async function loadTasks() {
         .from('tareas')
         .select('*')
         .order('created_at', { ascending: false });
-
-    if (result.error) {
-        console.error('Error al cargar tareas:', result.error);
-        return;
-    }
-
+    if (result.error) return;
     allTasks = result.data;
     renderAllTaskCards();
     renderActividadesCalendar();
@@ -640,14 +580,36 @@ var form = document.getElementById('task-form');
 form.addEventListener('submit', async function (evento) {
     evento.preventDefault();
 
-    var clienteId = parseInt(document.getElementById('cliente-select').value);
+    var clienteNombre = clienteInput.value.trim();
     var materia = document.getElementById('materia').value;
     var tarea = document.getElementById('tarea').value;
     var fecha = dateInput.value;
     var fechaIso = dateInput.dataset.iso || '';
     var prioridad = document.getElementById('prioridad').value;
 
-    if (!clienteId) { showToast('Selecciona un cliente'); return; }
+    if (!clienteNombre) { showToast('Ingresa el nombre del cliente'); return; }
+
+    var clienteId = selectedClienteId;
+
+    if (!clienteId) {
+        var exactMatch = allClients.filter(function (c) {
+            return c.nombre.toLowerCase() === clienteNombre.toLowerCase();
+        });
+        if (exactMatch.length > 0) {
+            clienteId = exactMatch[0].id;
+        } else {
+            var clientResult = await supabaseClient
+                .from('clientes')
+                .insert([{ nombre: clienteNombre }])
+                .select()
+                .single();
+            if (clientResult.error) { showToast('Error al crear cliente'); return; }
+            allClients.push(clientResult.data);
+            populateHistorialClienteFilter();
+            clienteId = clientResult.data.id;
+            showToast('Cliente "' + clienteNombre + '" creado');
+        }
+    }
 
     var result = await supabaseClient
         .from('tareas')
@@ -663,25 +625,36 @@ form.addEventListener('submit', async function (evento) {
         .select()
         .single();
 
-    if (result.error) {
-        console.error('Error al guardar tarea:', result.error);
-        showToast('Error al guardar la tarea');
-        return;
-    }
+    if (result.error) { showToast('Error al guardar la tarea'); return; }
 
     allTasks.unshift(result.data);
     renderAllTaskCards();
     renderActividadesCalendar();
 
     form.reset();
-    document.getElementById('cliente-select').value = '';
     document.getElementById('prioridad').value = 'media';
+    clienteInput.value = '';
+    selectedClienteId = null;
     selectedDate = null;
     currentMonth = currentDate.getMonth();
     currentYear = currentDate.getFullYear();
     renderFormCalendar();
 
     showToast('✅ Tarea guardada correctamente');
+});
+
+// ===== AJUSTES: RESET =====
+document.getElementById('btn-reset-data').addEventListener('click', function () {
+    showConfirm('¿Estás seguro? Se eliminarán TODAS las tareas y clientes. Esta acción no se puede deshacer.', async function () {
+        await supabaseClient.from('tareas').delete().neq('id', 0);
+        await supabaseClient.from('clientes').delete().neq('id', 0);
+        allTasks = [];
+        allClients = [];
+        renderAllTaskCards();
+        renderActividadesCalendar();
+        populateHistorialClienteFilter();
+        showToast('Todos los datos han sido eliminados');
+    });
 });
 
 // ===== INICIO =====
