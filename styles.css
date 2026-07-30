@@ -93,11 +93,31 @@ body {
 
 .panel {
     display: none;
-    max-width: 800px;
 }
 
 .panel.active {
     display: block;
+}
+
+#panel-nueva {
+    max-width: 600px;
+}
+
+#panel-actividades {
+    display: none;
+    max-width: none;
+}
+
+#panel-actividades.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.actividades-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex: 1;
 }
 
 .panel h1 {
@@ -193,7 +213,9 @@ body {
     padding: 20px 24px;
     margin-bottom: 24px;
     max-width: 380px;
+    width: 100%;
     transition: transform 0.2s, box-shadow 0.2s;
+    flex-shrink: 0;
 }
 
 .actividades-calendar:hover {
@@ -257,6 +279,11 @@ body {
 
 .calendar-days button.date-active::after {
     background: #fff;
+}
+
+.task-list-section {
+    flex: 1;
+    min-width: 0;
 }
 
 .filter-bar {

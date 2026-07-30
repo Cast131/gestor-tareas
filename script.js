@@ -8,7 +8,12 @@ var MONTHS = [
 ];
 
 var allTasks = [];
-var selectedFilterDate = null;
+var selectedFilterDate = (function () {
+    var today = new Date();
+    return today.getFullYear() + '-' +
+        String(today.getMonth() + 1).padStart(2, '0') + '-' +
+        String(today.getDate()).padStart(2, '0');
+})();
 var toastTimer = null;
 
 // ===== NAVEGACION SIDEBAR =====
@@ -23,7 +28,13 @@ sidebarBtns.forEach(function (btn) {
         panels.forEach(function (p) { p.classList.remove('active'); });
         document.getElementById('panel-' + panelId).classList.add('active');
         if (panelId === 'actividades') {
+            if (selectedFilterDate) {
+                var parts = selectedFilterDate.split('-');
+                actCurrentMonth = parseInt(parts[1]) - 1;
+                actCurrentYear = parseInt(parts[0]);
+            }
             renderActividadesCalendar();
+            updateFilterTitle();
         }
     });
 });
