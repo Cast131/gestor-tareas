@@ -103,94 +103,28 @@ function showToast(msg) {
 
 // ===== AUTOCOMPLETE CLIENTES =====
 var clienteInput = document.getElementById('cliente-input');
-var autocompleteDropdown = document.getElementById('autocomplete-dropdown');
+var clienteIndicator = document.getElementById('cliente-indicator');
 var selectedClienteId = null;
-var autocompleteIndex = -1;
 
 clienteInput.addEventListener('input', function () {
-    var query = this.value.trim().toLowerCase();
-    autocompleteDropdown.innerHTML = '';
-    autocompleteIndex = -1;
+    var query = this.value.trim();
     selectedClienteId = null;
+    clienteIndicator.className = 'cliente-indicator';
+    clienteIndicator.textContent = '';
 
-    if (!query) {
-        autocompleteDropdown.classList.remove('active');
-        return;
-    }
+    if (!query) return;
 
-    var matches = allClients.filter(function (c) {
-        return c.nombre.toLowerCase().indexOf(query) !== -1;
+    var exact = allClients.filter(function (c) {
+        return c.nombre.toLowerCase() === query.toLowerCase();
     });
 
-    if (matches.length === 0) {
-        autocompleteDropdown.classList.remove('active');
-        return;
-    }
-
-    matches.forEach(function (c, idx) {
-        var item = document.createElement('div');
-        item.className = 'autocomplete-item';
-        item.textContent = c.nombre;
-        item.addEventListener('mousedown', function () {
-            clienteInput.value = c.nombre;
-            selectedClienteId = c.id;
-            autocompleteDropdown.classList.remove('active');
-        });
-        autocompleteDropdown.appendChild(item);
-    });
-    autocompleteDropdown.classList.add('active');
-});
-
-clienteInput.addEventListener('keydown', function (e) {
-    var items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
-    if (!items.length) return;
-
-    if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        autocompleteIndex = Math.min(autocompleteIndex + 1, items.length - 1);
-        updateAutocompleteSelection(items);
-    } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        autocompleteIndex = Math.max(autocompleteIndex - 1, -1);
-        updateAutocompleteSelection(items);
-    } else if (e.key === 'Enter') {
-        e.preventDefault();
-        if (autocompleteIndex >= 0 && autocompleteIndex < items.length) {
-            var sel = items[autocompleteIndex];
-            clienteInput.value = sel.textContent;
-            for (var i = 0; i < allClients.length; i++) {
-                if (allClients[i].nombre === sel.textContent) {
-                    selectedClienteId = allClients[i].id;
-                    break;
-                }
-            }
-        }
-        autocompleteDropdown.classList.remove('active');
-    } else if (e.key === 'Escape') {
-        autocompleteDropdown.classList.remove('active');
-        autocompleteIndex = -1;
-    }
-});
-
-function updateAutocompleteSelection(items) {
-    items.forEach(function (item, idx) {
-        if (idx === autocompleteIndex) {
-            item.classList.add('selected');
-        } else {
-            item.classList.remove('selected');
-        }
-    });
-}
-
-clienteInput.addEventListener('blur', function () {
-    setTimeout(function () {
-        autocompleteDropdown.classList.remove('active');
-    }, 150);
-});
-
-document.addEventListener('click', function (e) {
-    if (!clienteInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
-        autocompleteDropdown.classList.remove('active');
+    if (exact.length > 0) {
+        selectedClienteId = exact[0].id;
+        clienteIndicator.className = 'cliente-indicator existe';
+        clienteIndicator.textContent = '✅ Cliente existente';
+    } else {
+        clienteIndicator.className = 'cliente-indicator nuevo';
+        clienteIndicator.textContent = '🆕 Se creará un nuevo cliente';
     }
 });
 
@@ -635,6 +569,8 @@ form.addEventListener('submit', async function (evento) {
     document.getElementById('prioridad').value = 'media';
     clienteInput.value = '';
     selectedClienteId = null;
+    clienteIndicator.className = 'cliente-indicator';
+    clienteIndicator.textContent = '';
     selectedDate = null;
     currentMonth = currentDate.getMonth();
     currentYear = currentDate.getFullYear();
