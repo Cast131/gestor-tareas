@@ -73,9 +73,11 @@ sidebarBtns.forEach(function (btn) {
         sidebarBtns.forEach(function (b) { b.classList.remove('active'); });
         this.classList.add('active');
         panels.forEach(function (p) { p.classList.remove('active'); });
-        document.getElementById('panel-' + panelId).classList.add('active');
+            document.getElementById('panel-' + panelId).classList.add('active');
 
-        if (panelId === 'actividades') {
+            sidebar.classList.remove('open');
+
+            if (panelId === 'actividades') {
             if (selectedFilterDate) {
                 var parts = selectedFilterDate.split('-');
                 actCurrentMonth = parseInt(parts[1]) - 1;
@@ -88,6 +90,20 @@ sidebarBtns.forEach(function (btn) {
             renderHistorial();
         }
     });
+});
+
+var sidebar = document.getElementById('sidebar');
+var hamburgerBtn = document.getElementById('hamburger-btn');
+
+hamburgerBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    sidebar.classList.toggle('open');
+});
+
+document.addEventListener('click', function (e) {
+    if (window.innerWidth <= 768 && !sidebar.contains(e.target) && e.target !== hamburgerBtn) {
+        sidebar.classList.remove('open');
+    }
 });
 
 // ===== TOAST =====

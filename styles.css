@@ -18,29 +18,52 @@ body {
 }
 
 .sidebar {
-    width: 250px;
+    width: 62px;
     background: #2b6cb0;
     color: #ffffff;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    padding: 0;
+    border-radius: 22px;
+    margin: 12px;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    z-index: 50;
+}
+
+.sidebar:hover {
+    width: 230px;
 }
 
 .sidebar-brand {
-    padding: 32px 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 16px 16px;
     border-bottom: 1px solid rgba(255,255,255,0.12);
+    white-space: nowrap;
 }
 
-.sidebar-brand h2 {
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    color: #fff;
+.sidebar-brand .sidebar-svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.sidebar-label {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.sidebar:hover .sidebar-label {
+    opacity: 1;
 }
 
 .sidebar-nav {
-    padding: 16px 12px;
+    padding: 12px 8px;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -49,9 +72,9 @@ body {
 .sidebar-btn {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
-    padding: 13px 16px;
+    padding: 12px 14px;
     background: none;
     border: none;
     color: rgba(255,255,255,0.72);
@@ -61,6 +84,8 @@ body {
     border-radius: 12px;
     transition: all 0.2s ease;
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .sidebar-btn:hover {
@@ -74,9 +99,13 @@ body {
     font-weight: 600;
 }
 
+.sidebar-btn .sidebar-label {
+    font-weight: inherit;
+}
+
 .sidebar-svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     flex-shrink: 0;
     opacity: 0.75;
 }
@@ -86,11 +115,34 @@ body {
     opacity: 1;
 }
 
+.hamburger-btn {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 60;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 14px;
+    background: #2b6cb0;
+    color: #fff;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(43,108,176,0.3);
+}
+
+.hamburger-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
 .main-content {
     flex: 1;
     background: #ffffff;
     border-radius: 30px;
-    margin: 15px 15px 15px 0;
+    margin: 12px 12px 12px 0;
     padding: 36px 40px;
     overflow-y: auto;
     box-shadow: 0 10px 40px rgba(0,0,0,0.04);
@@ -1216,7 +1268,12 @@ body {
 
 @media (max-width: 1024px) {
     .sidebar {
-        width: 200px;
+        width: 56px;
+        border-radius: 18px;
+        margin: 8px;
+    }
+    .sidebar:hover {
+        width: 210px;
     }
     .main-content {
         padding: 24px 20px;
@@ -1232,41 +1289,38 @@ body {
 }
 
 @media (max-width: 768px) {
+    .hamburger-btn {
+        display: flex;
+    }
     .layout {
         flex-direction: column;
+        position: relative;
     }
     .sidebar {
-        width: 100%;
-        flex-direction: row;
-        align-items: center;
-        padding: 0 12px;
-        min-height: 56px;
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        width: 260px;
+        height: auto;
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+        border-radius: 22px;
+        margin: 0;
+        transform: translateX(calc(-100% - 20px));
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.2);
     }
-    .sidebar-brand {
-        display: none;
+    .sidebar.open {
+        transform: translateX(0);
     }
-    .sidebar-nav {
-        flex-direction: row;
-        padding: 0;
-        gap: 2px;
-        width: 100%;
-        overflow-x: auto;
-    }
-    .sidebar-btn {
-        white-space: nowrap;
-        padding: 10px 12px;
-        font-size: 13px;
-        border-radius: 8px;
-        border-left: none;
-    }
-    .sidebar-svg {
-        width: 16px;
-        height: 16px;
+    .sidebar .sidebar-label {
+        opacity: 1;
     }
     .main-content {
-        margin: 10px;
-        border-radius: 20px;
+        margin: 52px 0 0 0;
+        border-radius: 20px 20px 0 0;
         padding: 20px 16px;
+        min-height: calc(100vh - 52px);
     }
     .panel h1 {
         font-size: 20px;
