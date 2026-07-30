@@ -582,8 +582,10 @@ form.addEventListener('submit', async function (evento) {
 // ===== AJUSTES: RESET =====
 document.getElementById('btn-reset-data').addEventListener('click', function () {
     showConfirm('¿Estás seguro? Se eliminarán TODAS las tareas y clientes. Esta acción no se puede deshacer.', async function () {
-        await supabaseClient.from('tareas').delete().neq('id', 0);
-        await supabaseClient.from('clientes').delete().neq('id', 0);
+        var err1 = await supabaseClient.from('tareas').delete().gte('id', 0);
+        if (err1.error) console.error('Error al borrar tareas:', err1.error);
+        var err2 = await supabaseClient.from('clientes').delete().gte('id', 0);
+        if (err2.error) console.error('Error al borrar clientes:', err2.error);
         allTasks = [];
         allClients = [];
         renderAllTaskCards();
