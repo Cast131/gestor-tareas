@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Tareas Universitarias</title>
+    <title>Gestor de Tareas</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -20,6 +20,12 @@
                 <button class="sidebar-btn" data-panel="actividades">
                     <span class="sidebar-icon">📋</span> Mis actividades
                 </button>
+                <button class="sidebar-btn" data-panel="clientes">
+                    <span class="sidebar-icon">👥</span> Clientes
+                </button>
+                <button class="sidebar-btn" data-panel="historial">
+                    <span class="sidebar-icon">📊</span> Historial
+                </button>
             </nav>
         </aside>
 
@@ -30,8 +36,24 @@
                 <div class="form-section">
                     <form id="task-form">
                         <div class="input-group">
-                            <label for="nombre">Nombre del estudiante</label>
-                            <input type="text" id="nombre" placeholder="Ej. Juan Pérez" required>
+                            <label for="cliente-select">Cliente</label>
+                            <div class="cliente-select-row">
+                                <select id="cliente-select" required>
+                                    <option value="">Selecciona un cliente...</option>
+                                </select>
+                                <button type="button" id="btn-add-cliente-inline" class="btn-add-inline" title="Agregar cliente">+</button>
+                            </div>
+                        </div>
+
+                        <div class="input-group" id="inline-cliente-form" style="display:none;">
+                            <div class="inline-form-row">
+                                <input type="text" id="inline-nombre" placeholder="Nombre del cliente" class="inline-input">
+                                <input type="text" id="inline-telefono" placeholder="Teléfono (opcional)" class="inline-input inline-tel">
+                            </div>
+                            <div class="inline-form-actions">
+                                <button type="button" id="btn-save-inline" class="btn-save-inline">Guardar</button>
+                                <button type="button" id="btn-cancel-inline" class="btn-cancel-inline">Cancelar</button>
+                            </div>
                         </div>
 
                         <div class="input-group">
@@ -116,6 +138,58 @@
                     <div id="tasks-container">
                     </div>
                 </div>
+                </div>
+            </section>
+
+            <section id="panel-clientes" class="panel">
+                <h1>Clientes</h1>
+
+                <div class="clientes-add-row">
+                    <input type="text" id="cliente-nombre" placeholder="Nombre del cliente" class="cliente-input">
+                    <input type="text" id="cliente-telefono" placeholder="Teléfono (opcional)" class="cliente-input cliente-tel">
+                    <button type="button" id="btn-add-cliente" class="btn-add-cliente">Agregar cliente</button>
+                </div>
+
+                <div class="clientes-list" id="clientes-list">
+                </div>
+            </section>
+
+            <section id="panel-historial" class="panel">
+                <h1>Historial de Actividades</h1>
+
+                <div class="historial-filters">
+                    <select id="historial-cliente-filter" class="filter-select">
+                        <option value="todas">Todos los clientes</option>
+                    </select>
+                    <select id="historial-status-filter" class="filter-select">
+                        <option value="todas">Todas</option>
+                        <option value="pendientes">Pendientes</option>
+                        <option value="completadas">Completadas</option>
+                    </select>
+                    <select id="historial-priority-filter" class="filter-select">
+                        <option value="todas">Todas las prioridades</option>
+                        <option value="alta">Alta</option>
+                        <option value="media">Media</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </div>
+
+                <div class="historial-table-wrapper">
+                    <table class="historial-table" id="historial-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Materia</th>
+                                <th>Descripción</th>
+                                <th>Fecha</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="historial-tbody">
+                        </tbody>
+                    </table>
                 </div>
             </section>
         </main>
