@@ -7,6 +7,7 @@
     <meta name="description" content="Gestor de actividades y clientes">
     <meta name="theme-color" content="#2b6cb0">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Tareas">
     <link rel="manifest" href="manifest.json">
@@ -22,16 +23,12 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <h1>Gestor de Tareas</h1>
             </div>
-            <p class="auth-subtitle" id="auth-subtitle">Inicia sesión en tu cuenta</p>
+            <p class="auth-subtitle">Inicia sesión en tu cuenta</p>
             <form id="auth-form" class="auth-form">
                 <input type="email" id="auth-email" placeholder="tu@email.com" required autocomplete="email">
-                <input type="password" id="auth-password" placeholder="Contraseña (mín. 6 caracteres)" required autocomplete="current-password" minlength="6">
+                <input type="password" id="auth-password" placeholder="Contraseña" required autocomplete="current-password">
                 <button type="submit" class="btn-submit" id="auth-submit">Entrar</button>
             </form>
-            <div class="auth-toggle">
-                <span id="auth-toggle-text">¿No tienes cuenta?</span>
-                <button type="button" id="auth-toggle-btn">Regístrate</button>
-            </div>
             <div class="auth-message" id="auth-message"></div>
         </div>
     </div>

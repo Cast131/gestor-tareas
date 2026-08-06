@@ -10,13 +10,9 @@ var authEmailInput = document.getElementById('auth-email');
 var authPasswordInput = document.getElementById('auth-password');
 var authMessage = document.getElementById('auth-message');
 var authSubmitBtn = document.getElementById('auth-submit');
-var authSubtitle = document.getElementById('auth-subtitle');
-var authToggleText = document.getElementById('auth-toggle-text');
-var authToggleBtn = document.getElementById('auth-toggle-btn');
 var sidebarUserEmail = document.getElementById('sidebar-user-email');
 var btnLogout = document.getElementById('btn-logout');
 var currentUser = null;
-var authMode = 'login';
 
 function showApp(user) {
     currentUser = user;
@@ -36,54 +32,21 @@ function showAuth() {
     authPasswordInput.value = '';
 }
 
-function setAuthMode(mode) {
-    authMode = mode;
-    if (mode === 'login') {
-        authSubtitle.textContent = 'Inicia sesión en tu cuenta';
-        authSubmitBtn.textContent = 'Entrar';
-        authPasswordInput.setAttribute('autocomplete', 'current-password');
-        authToggleText.textContent = '¿No tienes cuenta?';
-        authToggleBtn.textContent = 'Regístrate';
-    } else {
-        authSubtitle.textContent = 'Crea tu cuenta';
-        authSubmitBtn.textContent = 'Crear cuenta';
-        authPasswordInput.setAttribute('autocomplete', 'new-password');
-        authToggleText.textContent = '¿Ya tienes cuenta?';
-        authToggleBtn.textContent = 'Inicia sesión';
-    }
-    authMessage.textContent = '';
-    authMessage.className = 'auth-message';
-}
-
-authToggleBtn.addEventListener('click', function () {
-    setAuthMode(authMode === 'login' ? 'register' : 'login');
-});
-
 authForm.addEventListener('submit', async function (e) {
     e.preventDefault();
     var email = authEmailInput.value.trim();
     var password = authPasswordInput.value;
     if (!email || !password) return;
     authSubmitBtn.disabled = true;
-    authMessage.textContent = authMode === 'login' ? 'Ingresando...' : 'Creando cuenta...';
+    authMessage.textContent = 'Ingresando...';
     authMessage.className = 'auth-message';
 
-    var result;
-    if (authMode === 'login') {
-        result = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
-    } else {
-        result = await supabaseClient.auth.signUp({ email: email, password: password });
-    }
+    var result = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
 
     authSubmitBtn.disabled = false;
     if (result.error) {
         authMessage.textContent = 'Error: ' + result.error.message;
         authMessage.className = 'auth-message error';
-        return;
-    }
-    if (authMode === 'register' && result.data && result.data.user && !result.data.session) {
-        authMessage.textContent = 'Cuenta creada. Revisa tu correo para confirmar (o desactiva la confirmación en Supabase).';
-        authMessage.className = 'auth-message success';
         return;
     }
     authPasswordInput.value = '';
