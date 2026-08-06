@@ -1,4 +1,4 @@
-var CACHE_NAME = 'gestor-tareas-v20';
+var CACHE_NAME = 'gestor-tareas-v21';
 var urlsToCache = [
     '/',
     '/index.html',
@@ -6,8 +6,7 @@ var urlsToCache = [
     '/script.js',
     '/manifest.json',
     '/icon-192.svg',
-    '/icon-512.svg',
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
+    '/icon-512.svg'
 ];
 
 self.addEventListener('install', function (event) {
