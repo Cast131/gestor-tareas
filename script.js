@@ -544,6 +544,7 @@ function renderTaskCard(task) {
             '<input type="checkbox" class="checkbox-complete" title="Marcar como completada"' + checkedAttr + '>' +
             '<h3>' + escapeHtml(clienteName) + '</h3>' +
         '</div>' +
+        (task.created_by_email ? '<p class="creador">Por: ' + escapeHtml(task.created_by_email) + '</p>' : '') +
         '<p class="materia">' + escapeHtml(task.materia) + '</p>' +
         '<p class="descripcion">' + escapeHtml(task.descripcion) + '</p>' +
         '<div class="card-footer">' +
