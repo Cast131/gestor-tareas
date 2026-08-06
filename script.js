@@ -435,11 +435,13 @@ function renderTaskCard(task) {
         '<div class="card-header">' +
             '<input type="checkbox" class="checkbox-complete" title="Marcar como completada"' + checkedAttr + '>' +
             '<h3>' + escapeHtml(clienteName) + '</h3>' +
-            '<span class="priority-badge priority-' + prio + '">' + (priorityLabel[prio] || 'Media') + '</span>' +
         '</div>' +
         '<p class="materia">' + escapeHtml(task.materia) + '</p>' +
         '<p class="descripcion">' + escapeHtml(task.descripcion) + '</p>' +
-        '<p class="fecha">Entrega: ' + escapeHtml(task.fecha) + '</p>';
+        '<div class="card-footer">' +
+            '<span class="priority-badge priority-' + prio + '">' + (priorityLabel[prio] || 'Media') + '</span>' +
+            '<span class="fecha">Entrega: ' + escapeHtml(task.fecha) + '</span>' +
+        '</div>';
 
     taskCard.querySelector('.checkbox-complete').addEventListener('change', function () {
         var newCompleted = this.checked;
