@@ -78,6 +78,28 @@
     background: #fff;
 }
 
+.auth-toggle {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.auth-toggle button {
+    background: none;
+    border: none;
+    color: #2b6cb0;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 4px;
+    padding: 0;
+}
+
+.auth-toggle button:hover {
+    text-decoration: underline;
+}
+
 .auth-message {
     margin-top: 16px;
     font-size: 14px;
