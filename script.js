@@ -440,6 +440,7 @@ function renderTaskCard(task) {
         '<p class="descripcion">' + escapeHtml(task.descripcion) + '</p>' +
         '<div class="card-footer">' +
             '<span class="priority-badge priority-' + prio + '">' + (priorityLabel[prio] || 'Media') + '</span>' +
+            (task.precio != null ? '<span class="precio">$' + Number(task.precio).toFixed(2) + '</span>' : '') +
             '<span class="fecha">Entrega: ' + escapeHtml(task.fecha) + '</span>' +
         '</div>';
 
@@ -480,6 +481,7 @@ function openEditModal(task) {
     document.getElementById('edit-materia').value = task.materia;
     document.getElementById('edit-descripcion').value = task.descripcion;
     document.getElementById('edit-prioridad').value = task.priority || 'media';
+    document.getElementById('edit-precio').value = task.precio != null ? task.precio : '';
     editModalOverlay.classList.add('active');
 }
 
@@ -499,6 +501,8 @@ document.getElementById('edit-modal-save').addEventListener('click', async funct
     var materia = document.getElementById('edit-materia').value.trim();
     var descripcion = document.getElementById('edit-descripcion').value.trim();
     var prioridad = document.getElementById('edit-prioridad').value;
+    var precioInput = document.getElementById('edit-precio').value;
+    var precio = precioInput === '' ? null : parseFloat(precioInput);
 
     if (!materia || !descripcion) {
         showToast('Completa todos los campos');
@@ -507,7 +511,7 @@ document.getElementById('edit-modal-save').addEventListener('click', async funct
 
     var result = await supabaseClient
         .from('tareas')
-        .update({ materia: materia, descripcion: descripcion, priority: prioridad })
+        .update({ materia: materia, descripcion: descripcion, priority: prioridad, precio: precio })
         .eq('id', editingTaskId);
 
     if (result.error) {
@@ -520,6 +524,7 @@ document.getElementById('edit-modal-save').addEventListener('click', async funct
             allTasks[i].materia = materia;
             allTasks[i].descripcion = descripcion;
             allTasks[i].priority = prioridad;
+            allTasks[i].precio = precio;
             break;
         }
     }
@@ -638,6 +643,14 @@ async function loadTasks() {
 
 var form = document.getElementById('task-form');
 
+document.querySelectorAll('#priority-pills .priority-pill').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('#priority-pills .priority-pill').forEach(function (b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        document.getElementById('prioridad').value = this.dataset.value;
+    });
+});
+
 form.addEventListener('submit', async function (evento) {
     evento.preventDefault();
 
@@ -647,6 +660,8 @@ form.addEventListener('submit', async function (evento) {
     var fecha = dateInput.value;
     var fechaIso = dateInput.dataset.iso || '';
     var prioridad = document.getElementById('prioridad').value;
+    var precioInput = document.getElementById('precio').value;
+    var precio = precioInput === '' ? null : parseFloat(precioInput);
 
     if (!clienteNombre) { showToast('Ingresa el nombre del cliente'); return; }
 
@@ -681,6 +696,7 @@ form.addEventListener('submit', async function (evento) {
             fecha: fecha,
             fecha_iso: fechaIso,
             priority: prioridad,
+            precio: precio,
             completed: false
         }])
         .select()
@@ -694,6 +710,9 @@ form.addEventListener('submit', async function (evento) {
 
     form.reset();
     document.getElementById('prioridad').value = 'media';
+    document.querySelectorAll('#priority-pills .priority-pill').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.value === 'media');
+    });
     clienteInput.value = '';
     selectedClienteId = null;
     clienteIndicator.className = 'cliente-indicator';

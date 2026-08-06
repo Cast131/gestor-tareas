@@ -60,41 +60,51 @@
                             <div class="cliente-indicator" id="cliente-indicator"></div>
                         </div>
 
-                        <div class="input-group">
-                            <label for="materia">Materia o Carrera</label>
-                            <input type="text" id="materia" placeholder="Ej. Cálculo I / Ingeniería" required>
-                        </div>
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="materia">Materia o Carrera</label>
+                                <input type="text" id="materia" placeholder="Ej. Cálculo I / Ingeniería" required>
+                            </div>
 
-                        <div class="input-group">
-                            <label for="tarea">Tarea a desarrollar</label>
-                            <textarea id="tarea" rows="3" placeholder="Describe lo que hay que hacer..." required></textarea>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="fecha">Fecha de entrega</label>
-                            <div class="custom-datepicker">
-                                <input type="text" id="fecha" class="date-input" placeholder="Selecciona una fecha" readonly required>
-                                <div class="calendar-dropdown" id="calendar-dropdown">
-                                    <div class="calendar-header">
-                                        <button type="button" class="cal-nav cal-prev" id="cal-prev">&lt;</button>
-                                        <span class="cal-month-year" id="cal-month-year"></span>
-                                        <button type="button" class="cal-nav cal-next" id="cal-next">&gt;</button>
+                            <div class="input-group">
+                                <label for="fecha">Fecha de entrega</label>
+                                <div class="custom-datepicker">
+                                    <input type="text" id="fecha" class="date-input" placeholder="Selecciona una fecha" readonly required>
+                                    <div class="calendar-dropdown" id="calendar-dropdown">
+                                        <div class="calendar-header">
+                                            <button type="button" class="cal-nav cal-prev" id="cal-prev">&lt;</button>
+                                            <span class="cal-month-year" id="cal-month-year"></span>
+                                            <button type="button" class="cal-nav cal-next" id="cal-next">&gt;</button>
+                                        </div>
+                                        <div class="calendar-weekdays">
+                                            <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+                                        </div>
+                                        <div class="calendar-days" id="calendar-days"></div>
                                     </div>
-                                    <div class="calendar-weekdays">
-                                        <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
-                                    </div>
-                                    <div class="calendar-days" id="calendar-days"></div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="input-group">
-                            <label for="prioridad">Prioridad</label>
-                            <select id="prioridad" class="select-priority">
-                                <option value="alta">Alta</option>
-                                <option value="media" selected>Media</option>
-                                <option value="baja">Baja</option>
-                            </select>
+                            <label for="tarea">Tarea a desarrollar</label>
+                            <textarea id="tarea" rows="4" placeholder="Describe lo que hay que hacer..." required></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label>Prioridad</label>
+                                <div class="priority-pills" id="priority-pills">
+                                    <input type="hidden" id="prioridad" value="media">
+                                    <button type="button" class="priority-pill" data-value="alta">Alta</button>
+                                    <button type="button" class="priority-pill active" data-value="media">Media</button>
+                                    <button type="button" class="priority-pill" data-value="baja">Baja</button>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="precio">Precio (opcional)</label>
+                                <input type="number" id="precio" min="0" step="0.01" placeholder="Ej. 1500.00">
+                            </div>
                         </div>
 
                         <button type="submit" class="btn-submit">Agregar Actividad</button>
@@ -228,6 +238,10 @@
                         <option value="media">Media</option>
                         <option value="baja">Baja</option>
                     </select>
+                </div>
+                <div class="input-group">
+                    <label for="edit-precio">Precio (opcional)</label>
+                    <input type="number" id="edit-precio" min="0" step="0.01" placeholder="Ej. 1500.00">
                 </div>
             </div>
             <div class="edit-modal-actions">
