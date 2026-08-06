@@ -1505,6 +1505,81 @@ body {
     color: #fff;
 }
 
+.btn-ajuste-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    background: #2b6cb0;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-ajuste-primary:hover {
+    background: #1e4e8c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(43,108,176,0.3);
+}
+
+.btn-ajuste-primary svg {
+    width: 18px;
+    height: 18px;
+}
+
+.import-mode-wrapper {
+    margin-top: 16px;
+    text-align: left;
+}
+
+.import-mode-label {
+    display: block;
+    font-size: 13px;
+    color: #475569;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.import-mode-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.import-mode-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+    transition: all 0.15s;
+}
+
+.import-mode-option:hover {
+    border-color: #2b6cb0;
+    background: #eff6ff;
+}
+
+.import-mode-option input[type="radio"] {
+    margin-top: 2px;
+    accent-color: #2b6cb0;
+    cursor: pointer;
+}
+
+.import-mode-option span {
+    flex: 1;
+}
+
 .edit-modal-card {
     max-width: 480px;
     text-align: left;

@@ -880,5 +880,161 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js');
 }
 
+// ===== EXPORTAR / IMPORTAR =====
+var importFileInput = document.getElementById('import-file-input');
+var btnExport = document.getElementById('btn-export-data');
+var btnImport = document.getElementById('btn-import-data');
+
+btnExport.addEventListener('click', function () {
+    if (allTasks.length === 0 && allClients.length === 0) {
+        showAlert('No hay datos para exportar.');
+        return;
+    }
+    var payload = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        clients: allClients,
+        tasks: allTasks
+    };
+    var json = JSON.stringify(payload, null, 2);
+    var blob = new Blob([json], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'gestor-tareas-' + new Date().toISOString().split('T')[0] + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Datos exportados correctamente');
+});
+
+btnImport.addEventListener('click', function () {
+    importFileInput.click();
+});
+
+importFileInput.addEventListener('change', function () {
+    var file = this.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        try {
+            var data = JSON.parse(e.target.result);
+            validateAndOfferImport(data);
+        } catch (err) {
+            showAlert('Archivo inválido: no es un JSON válido.');
+        } finally {
+            importFileInput.value = '';
+        }
+    };
+    reader.onerror = function () {
+        showAlert('Error al leer el archivo.');
+        importFileInput.value = '';
+    };
+    reader.readAsText(file);
+});
+
+function validateAndOfferImport(data) {
+    if (!data || typeof data !== 'object' || !Array.isArray(data.tasks) || !Array.isArray(data.clients)) {
+        showAlert('El archivo no tiene el formato esperado. Faltan las listas de tareas o clientes.');
+        return;
+    }
+    var taskCount = data.tasks.length;
+    var clientCount = data.clients.length;
+    var msg = 'Se encontraron <strong>' + taskCount + '</strong> tareas y <strong>' + clientCount + '</strong> clientes en el archivo.';
+    showImportConfirm(msg, data);
+}
+
+function showImportConfirm(msg, data) {
+    modalMessage.innerHTML = msg +
+        '<div class="import-mode-wrapper">' +
+        '<label class="import-mode-label">Elige cómo importar:</label>' +
+        '<div class="import-mode-options">' +
+        '<label class="import-mode-option"><input type="radio" name="import-mode" value="replace" checked> <span><strong>Reemplazar</strong> — Borrar todo lo actual y cargar el archivo</span></label>' +
+        '<label class="import-mode-option"><input type="radio" name="import-mode" value="merge"> <span><strong>Fusionar</strong> — Agregar a lo existente (sin duplicar clientes por nombre)</span></label>' +
+        '</div></div>';
+    modalActions.innerHTML =
+        '<button class="modal-btn-cancel" id="modal-btn-no">Cancelar</button>' +
+        '<button class="modal-btn-confirm" id="modal-btn-si">Importar</button>';
+    modalOverlay.classList.add('active');
+
+    document.getElementById('modal-btn-no').addEventListener('click', closeModal);
+    document.getElementById('modal-btn-si').addEventListener('click', async function () {
+        closeModal();
+        var mode = document.querySelector('input[name="import-mode"]:checked').value;
+        await performImport(data, mode);
+    });
+}
+
+async function performImport(data, mode) {
+    try {
+        if (mode === 'replace') {
+            var del1 = await supabaseClient.from('tareas').delete().gte('id', 0);
+            if (del1.error) throw new Error('Error al borrar tareas');
+            var del2 = await supabaseClient.from('clientes').delete().gte('id', 0);
+            if (del2.error) throw new Error('Error al borrar clientes');
+            allTasks = [];
+            allClients = [];
+        }
+
+        var clientMap = {};
+        allClients.forEach(function (c) {
+            clientMap[c.nombre.toLowerCase()] = c;
+        });
+
+        var clientsToInsert = [];
+        data.clients.forEach(function (c) {
+            if (!c.nombre) return;
+            if (mode === 'merge' && clientMap[c.nombre.toLowerCase()]) return;
+            clientsToInsert.push({ nombre: c.nombre });
+        });
+
+        if (clientsToInsert.length > 0) {
+            var insClients = await supabaseClient.from('clientes').insert(clientsToInsert).select();
+            if (insClients.error) throw new Error('Error al insertar clientes');
+            insClients.data.forEach(function (c) {
+                allClients.push(c);
+                clientMap[c.nombre.toLowerCase()] = c;
+            });
+        }
+
+        var tasksToInsert = [];
+        data.tasks.forEach(function (t) {
+            var newClienteId = null;
+            if (t.cliente_id) {
+                var originalClient = data.clients.find(function (c) { return c.id === t.cliente_id; });
+                if (originalClient && clientMap[originalClient.nombre.toLowerCase()]) {
+                    newClienteId = clientMap[originalClient.nombre.toLowerCase()].id;
+                }
+            }
+            tasksToInsert.push({
+                cliente_id: newClienteId,
+                materia: t.materia || '',
+                descripcion: t.descripcion || '',
+                fecha: t.fecha || '',
+                fecha_iso: t.fecha_iso || '',
+                priority: t.priority || 'media',
+                precio: t.precio != null ? t.precio : null,
+                completed: !!t.completed
+            });
+        });
+
+        if (tasksToInsert.length > 0) {
+            var insTasks = await supabaseClient.from('tareas').insert(tasksToInsert).select();
+            if (insTasks.error) throw new Error('Error al insertar tareas');
+            insTasks.data.forEach(function (t) {
+                allTasks.unshift(t);
+            });
+        }
+
+        renderAllTaskCards();
+        renderActividadesCalendar();
+        populateHistorialClienteFilter();
+        showToast('Importación completada: ' + clientsToInsert.length + ' clientes, ' + tasksToInsert.length + ' tareas');
+    } catch (err) {
+        showAlert('Error en la importación: ' + err.message);
+    }
+}
+
 // ===== INICIO =====
 // (bootstrap manejado por el módulo de auth arriba)

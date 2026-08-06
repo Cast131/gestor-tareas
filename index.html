@@ -223,6 +223,29 @@
                 <h1>Ajustes</h1>
 
                 <div class="ajustes-section">
+                    <div class="ajustes-card">
+                        <div class="ajustes-card-header">
+                            <h3>Exportar datos</h3>
+                            <p>Descarga una copia de todas tus tareas y clientes en formato JSON. Guarda el archivo como respaldo.</p>
+                        </div>
+                        <button type="button" id="btn-export-data" class="btn-ajuste-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Exportar a JSON
+                        </button>
+                    </div>
+
+                    <div class="ajustes-card">
+                        <div class="ajustes-card-header">
+                            <h3>Importar datos</h3>
+                            <p>Carga tareas y clientes desde un archivo JSON exportado previamente. Puedes reemplazar los datos actuales o fusionarlos.</p>
+                        </div>
+                        <input type="file" id="import-file-input" accept=".json,application/json" style="display:none">
+                        <button type="button" id="btn-import-data" class="btn-ajuste-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            Importar desde JSON
+                        </button>
+                    </div>
+
                     <div class="ajustes-card ajustes-danger">
                         <div class="ajustes-card-header">
                             <h3>Restablecer datos</h3>
