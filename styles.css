@@ -1353,7 +1353,37 @@ body {
 .modal-actions {
     display: flex;
     gap: 10px;
-    justify-content: center;
+    justify-content: flex-end;
+}
+
+.danger-confirm-wrapper {
+    margin-top: 16px;
+    text-align: left;
+}
+
+.danger-confirm-label {
+    display: block;
+    font-size: 13px;
+    color: #475569;
+    margin-bottom: 8px;
+}
+
+.danger-confirm-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #f4f7f9;
+    color: #1e293b;
+    font-family: inherit;
+}
+
+.danger-confirm-input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
+    background: #fff;
 }
 
 .modal-actions button {
@@ -1382,6 +1412,16 @@ body {
 
 .modal-btn-confirm:hover {
     background: #b91c1c;
+}
+
+.modal-btn-confirm:disabled {
+    background: #cbd5e1;
+    color: #f1f5f9;
+    cursor: not-allowed;
+}
+
+.modal-btn-confirm:disabled:hover {
+    background: #cbd5e1;
 }
 
 .modal-btn-ok {

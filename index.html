@@ -6,6 +6,8 @@
     <title>Gestor de Tareas</title>
     <meta name="description" content="Gestor de actividades y clientes">
     <meta name="theme-color" content="#2b6cb0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://fysjierhimzjpotfwbkf.supabase.co; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -77,7 +79,7 @@
                         <div class="input-group">
                             <label for="cliente-input">Cliente</label>
                             <div class="cliente-input-wrapper">
-                                <input type="text" id="cliente-input" class="cliente-autocomplete" placeholder="Escribe el nombre del cliente..." autocomplete="off" required>
+                                <input type="text" id="cliente-input" class="cliente-autocomplete" placeholder="Escribe el nombre del cliente..." autocomplete="off" maxlength="100" required>
                                 <div class="cliente-suggestions" id="cliente-suggestions"></div>
                             </div>
                             <div class="cliente-indicator" id="cliente-indicator"></div>
@@ -86,7 +88,7 @@
                         <div class="form-row">
                             <div class="input-group">
                                 <label for="materia">Materia o Carrera</label>
-                                <input type="text" id="materia" placeholder="Ej. Cálculo I / Ingeniería" required>
+                                <input type="text" id="materia" placeholder="Ej. Cálculo I / Ingeniería" maxlength="200" required>
                             </div>
 
                             <div class="input-group">
@@ -110,7 +112,7 @@
 
                         <div class="input-group">
                             <label for="tarea">Tarea a desarrollar</label>
-                            <textarea id="tarea" rows="4" placeholder="Describe lo que hay que hacer..." required></textarea>
+                            <textarea id="tarea" rows="4" placeholder="Describe lo que hay que hacer..." maxlength="2000" required></textarea>
                         </div>
 
                         <div class="form-row">
@@ -248,11 +250,11 @@
             <div class="edit-modal-body">
                 <div class="input-group">
                     <label for="edit-materia">Materia o Carrera</label>
-                    <input type="text" id="edit-materia" required>
+                    <input type="text" id="edit-materia" maxlength="200" required>
                 </div>
                 <div class="input-group">
                     <label for="edit-descripcion">Descripci&oacute;n</label>
-                    <textarea id="edit-descripcion" rows="3" required></textarea>
+                    <textarea id="edit-descripcion" rows="3" maxlength="2000" required></textarea>
                 </div>
                 <div class="input-group">
                     <label for="edit-prioridad">Prioridad</label>

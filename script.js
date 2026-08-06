@@ -132,6 +132,37 @@ function showAlert(msg, onOk) {
     });
 }
 
+function showDangerConfirm(msg, confirmWord, onConfirm) {
+    modalMessage.innerHTML = msg +
+        '<div class="danger-confirm-wrapper">' +
+        '<label class="danger-confirm-label">Escribe <strong>' + confirmWord + '</strong> para confirmar:</label>' +
+        '<input type="text" id="danger-confirm-input" class="danger-confirm-input" autocomplete="off">' +
+        '</div>';
+    modalActions.innerHTML =
+        '<button class="modal-btn-cancel" id="modal-btn-no">Cancelar</button>' +
+        '<button class="modal-btn-confirm" id="modal-btn-si" disabled>Eliminar</button>';
+    modalOverlay.classList.add('active');
+
+    var input = document.getElementById('danger-confirm-input');
+    var confirmBtn = document.getElementById('modal-btn-si');
+    input.focus();
+    input.addEventListener('input', function () {
+        confirmBtn.disabled = input.value.trim() !== confirmWord;
+    });
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !confirmBtn.disabled) {
+            closeModal();
+            onConfirm();
+        }
+    });
+
+    document.getElementById('modal-btn-no').addEventListener('click', closeModal);
+    confirmBtn.addEventListener('click', function () {
+        closeModal();
+        onConfirm();
+    });
+}
+
 function closeModal() {
     modalOverlay.classList.remove('active');
 }
@@ -804,18 +835,22 @@ form.addEventListener('submit', async function (evento) {
 
 // ===== AJUSTES: RESET =====
 document.getElementById('btn-reset-data').addEventListener('click', function () {
-    showConfirm('¿Estás seguro? Se eliminarán TODAS las tareas y clientes. Esta acción no se puede deshacer.', async function () {
-        var err1 = await supabaseClient.from('tareas').delete().gte('id', 0);
-        if (err1.error) console.error('Error al borrar tareas:', err1.error);
-        var err2 = await supabaseClient.from('clientes').delete().gte('id', 0);
-        if (err2.error) console.error('Error al borrar clientes:', err2.error);
-        allTasks = [];
-        allClients = [];
-        renderAllTaskCards();
-        renderActividadesCalendar();
-        populateHistorialClienteFilter();
-        showToast('Todos los datos han sido eliminados');
-    });
+    showDangerConfirm(
+        'Esta acción <strong>eliminará permanentemente</strong> todas tus tareas y clientes. No se puede deshacer.',
+        'ELIMINAR',
+        async function () {
+            var err1 = await supabaseClient.from('tareas').delete().gte('id', 0);
+            if (err1.error) console.error('Error al borrar tareas:', err1.error);
+            var err2 = await supabaseClient.from('clientes').delete().gte('id', 0);
+            if (err2.error) console.error('Error al borrar clientes:', err2.error);
+            allTasks = [];
+            allClients = [];
+            renderAllTaskCards();
+            renderActividadesCalendar();
+            populateHistorialClienteFilter();
+            showToast('Todos los datos han sido eliminados');
+        }
+    );
 });
 
 // ===== PWA =====
