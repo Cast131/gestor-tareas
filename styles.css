@@ -5,6 +5,99 @@
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
+.auth-overlay {
+    position: fixed;
+    inset: 0;
+    background: #e4ebf5;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-overlay.hidden {
+    display: none;
+}
+
+.auth-card {
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+}
+
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    color: #2b6cb0;
+}
+
+.auth-brand svg {
+    width: 32px;
+    height: 32px;
+}
+
+.auth-brand h1 {
+    font-size: 22px;
+    color: #1e293b;
+    font-weight: 700;
+    margin: 0;
+}
+
+.auth-subtitle {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 13px 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    background: #f4f7f9;
+    color: #1e293b;
+    transition: all 0.2s;
+}
+
+.auth-form input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #2b6cb0;
+    background: #fff;
+}
+
+.auth-message {
+    margin-top: 16px;
+    font-size: 14px;
+    color: #475569;
+    text-align: center;
+    min-height: 20px;
+}
+
+.auth-message.error {
+    color: #dc2626;
+}
+
+.auth-message.success {
+    color: #16a34a;
+}
+
+#app-layout.hidden {
+    display: none;
+}
+
 body {
     background-color: #e4ebf5;
     color: #1e293b;
@@ -67,6 +160,57 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    flex: 1;
+}
+
+.sidebar-user {
+    padding: 12px 8px;
+    border-top: 1px solid #e2e8f0;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.sidebar-user-email {
+    flex: 1;
+    font-size: 13px;
+    color: #cbd5e1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.sidebar:hover .sidebar-user-email {
+    color: #cbd5e1;
+}
+
+.btn-logout {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: #cbd5e1;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+}
+
+.btn-logout:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.btn-logout svg {
+    width: 14px;
+    height: 14px;
 }
 
 .sidebar-btn {

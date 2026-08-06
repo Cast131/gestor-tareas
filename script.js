@@ -2,6 +2,83 @@ var SUPABASE_URL = 'https://fysjierhimzjpotfwbkf.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_msOvy_8roFVAn_eDmVRGHQ__MfBNzV3';
 var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ===== AUTENTICACIÓN =====
+var authOverlay = document.getElementById('auth-overlay');
+var appLayout = document.getElementById('app-layout');
+var authForm = document.getElementById('auth-form');
+var authEmailInput = document.getElementById('auth-email');
+var authMessage = document.getElementById('auth-message');
+var authSubmitBtn = document.getElementById('auth-submit');
+var sidebarUserEmail = document.getElementById('sidebar-user-email');
+var btnLogout = document.getElementById('btn-logout');
+var currentUser = null;
+
+function showApp(user) {
+    currentUser = user;
+    authOverlay.classList.add('hidden');
+    appLayout.classList.remove('hidden');
+    sidebarUserEmail.textContent = user.email || '';
+}
+
+function showAuth() {
+    currentUser = null;
+    allTasks = [];
+    allClients = [];
+    appLayout.classList.add('hidden');
+    authOverlay.classList.remove('hidden');
+    authMessage.textContent = '';
+    authMessage.className = 'auth-message';
+}
+
+authForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var email = authEmailInput.value.trim();
+    if (!email) return;
+    authSubmitBtn.disabled = true;
+    authMessage.textContent = 'Enviando enlace...';
+    authMessage.className = 'auth-message';
+    var result = await supabaseClient.auth.signInWithOtp({
+        email: email,
+        options: { emailRedirectTo: window.location.origin + '/gestor-tareas/' }
+    });
+    authSubmitBtn.disabled = false;
+    if (result.error) {
+        authMessage.textContent = 'Error: ' + result.error.message;
+        authMessage.className = 'auth-message error';
+    } else {
+        authMessage.textContent = '¡Revisa tu correo! Te enviamos un enlace para iniciar sesión.';
+        authMessage.className = 'auth-message success';
+        authEmailInput.value = '';
+    }
+});
+
+btnLogout.addEventListener('click', async function () {
+    await supabaseClient.auth.signOut();
+});
+
+supabaseClient.auth.onAuthStateChange(function (event, session) {
+    if (session && session.user) {
+        showApp(session.user);
+        loadClients();
+        loadTasks();
+        updateFilterTitle();
+    } else {
+        showAuth();
+    }
+});
+
+(async function bootstrap() {
+    var sessionResult = await supabaseClient.auth.getSession();
+    if (sessionResult.data && sessionResult.data.session && sessionResult.data.session.user) {
+        showApp(sessionResult.data.session.user);
+        await loadClients();
+        await loadTasks();
+        updateFilterTitle();
+    } else {
+        showAuth();
+    }
+})();
+
 var MONTHS = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -747,10 +824,4 @@ if ('serviceWorker' in navigator) {
 }
 
 // ===== INICIO =====
-async function init() {
-    await loadClients();
-    await loadTasks();
-    updateFilterTitle();
-}
-
-init();
+// (bootstrap manejado por el módulo de auth arriba)
