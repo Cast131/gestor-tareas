@@ -1,12 +1,12 @@
-var CACHE_NAME = 'gestor-tareas-v19';
+var CACHE_NAME = 'gestor-tareas-v20';
 var urlsToCache = [
-    '/gestor-tareas/',
-    '/gestor-tareas/index.html',
-    '/gestor-tareas/styles.css',
-    '/gestor-tareas/script.js',
-    '/gestor-tareas/manifest.json',
-    '/gestor-tareas/icon-192.svg',
-    '/gestor-tareas/icon-512.svg',
+    '/',
+    '/index.html',
+    '/styles.css',
+    '/script.js',
+    '/manifest.json',
+    '/icon-192.svg',
+    '/icon-512.svg',
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
 ];
 
@@ -32,7 +32,7 @@ self.addEventListener('fetch', function (event) {
                 }
                 return networkResponse;
             }).catch(function () {
-                return caches.match('/gestor-tareas/index.html');
+                return caches.match('/index.html');
             });
         })
     );

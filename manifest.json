@@ -2,7 +2,7 @@
     "name": "Gestor de Tareas",
     "short_name": "Tareas",
     "description": "Gestor de actividades y clientes",
-    "start_url": "/gestor-tareas/",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#e4ebf5",
     "theme_color": "#2b6cb0",
