@@ -13,6 +13,8 @@ var authSubmitBtn = document.getElementById('auth-submit');
 var sidebarUserEmail = document.getElementById('sidebar-user-email');
 var btnLogout = document.getElementById('btn-logout');
 var currentUser = null;
+var initialLoadDone = false;
+var selectedClienteId = null;
 
 function showApp(user) {
     currentUser = user;
@@ -25,6 +27,13 @@ function showAuth() {
     currentUser = null;
     allTasks = [];
     allClients = [];
+    selectedClienteId = null;
+    if (clienteInput) clienteInput.value = '';
+    if (clienteIndicator) {
+        clienteIndicator.className = 'cliente-indicator';
+        clienteIndicator.textContent = '';
+    }
+    if (clienteSuggestions) clienteSuggestions.innerHTML = '';
     appLayout.classList.add('hidden');
     authOverlay.classList.remove('hidden');
     authMessage.textContent = '';
@@ -59,9 +68,11 @@ btnLogout.addEventListener('click', async function () {
 supabaseClient.auth.onAuthStateChange(function (event, session) {
     if (session && session.user) {
         showApp(session.user);
-        loadClients();
-        loadTasks();
-        updateFilterTitle();
+        if (initialLoadDone) {
+            loadClients();
+            loadTasks();
+            updateFilterTitle();
+        }
     } else {
         showAuth();
     }
@@ -77,6 +88,7 @@ supabaseClient.auth.onAuthStateChange(function (event, session) {
     } else {
         showAuth();
     }
+    initialLoadDone = true;
 })();
 
 var MONTHS = [
@@ -229,7 +241,6 @@ function showToast(msg) {
 var clienteInput = document.getElementById('cliente-input');
 var clienteIndicator = document.getElementById('cliente-indicator');
 var clienteSuggestions = document.getElementById('cliente-suggestions');
-var selectedClienteId = null;
 
 clienteInput.addEventListener('input', function () {
     var query = this.value.trim();
@@ -533,11 +544,11 @@ function renderTaskCard(task) {
 
     taskCard.innerHTML =
         '<div class="card-actions">' +
-            '<button class="btn-card-action btn-edit" title="Editar">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+            '<button class="btn-card-action btn-edit" title="Editar" aria-label="Editar actividad">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
             '</button>' +
-            '<button class="btn-card-action btn-delete-card" title="Eliminar">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+            '<button class="btn-card-action btn-delete-card" title="Eliminar" aria-label="Eliminar actividad">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
             '</button>' +
         '</div>' +
         '<div class="card-header">' +
@@ -565,7 +576,11 @@ function renderTaskCard(task) {
 
     taskCard.querySelector('.btn-delete-card').addEventListener('click', function () {
         showConfirm('¿Eliminar esta actividad?', function () {
-            supabaseClient.from('tareas').delete().eq('id', task.id).then(function () {
+            supabaseClient.from('tareas').delete().eq('id', task.id).then(function (result) {
+                if (result.error) {
+                    showToast('Error al eliminar');
+                    return;
+                }
                 taskCard.remove();
                 allTasks = allTasks.filter(function (t) { return t.id !== task.id; });
                 renderActividadesCalendar();
@@ -716,11 +731,15 @@ function renderHistorial() {
             '<td class="td-fecha">' + escapeHtml(t.fecha) + '</td>' +
             '<td><span class="priority-badge priority-' + (t.priority || 'media') + '">' + (priorityLabel[t.priority] || 'Media') + '</span></td>' +
             '<td>' + estadoHtml + '</td>' +
-            '<td><button class="btn-table-delete" title="Eliminar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>';
+            '<td><button class="btn-table-delete" title="Eliminar" aria-label="Eliminar actividad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>';
 
         tr.querySelector('.btn-table-delete').addEventListener('click', function () {
             showConfirm('¿Eliminar esta actividad?', function () {
-                supabaseClient.from('tareas').delete().eq('id', t.id).then(function () {
+                supabaseClient.from('tareas').delete().eq('id', t.id).then(function (result) {
+                    if (result.error) {
+                        showToast('Error al eliminar');
+                        return;
+                    }
                     allTasks = allTasks.filter(function (x) { return x.id !== t.id; });
                     renderHistorial();
                     renderAllTaskCards();
@@ -841,9 +860,11 @@ document.getElementById('btn-reset-data').addEventListener('click', function () 
         'ELIMINAR',
         async function () {
             var err1 = await supabaseClient.from('tareas').delete().gte('id', 0);
-            if (err1.error) console.error('Error al borrar tareas:', err1.error);
             var err2 = await supabaseClient.from('clientes').delete().gte('id', 0);
-            if (err2.error) console.error('Error al borrar clientes:', err2.error);
+            if (err1.error || err2.error) {
+                showToast('Error al restablecer los datos');
+                return;
+            }
             allTasks = [];
             allClients = [];
             renderAllTaskCards();
