@@ -1353,7 +1353,14 @@ body {
 .modal-actions {
     display: flex;
     gap: 10px;
-    justify-content: flex-end;
+    justify-content: center;
+}
+
+.edit-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 4px;
 }
 
 .danger-confirm-wrapper {
@@ -1386,7 +1393,8 @@ body {
     background: #fff;
 }
 
-.modal-actions button {
+.modal-actions button,
+.edit-modal-actions button {
     padding: 11px 28px;
     border: none;
     border-radius: 12px;
@@ -1506,12 +1514,6 @@ body {
 
 .edit-modal-body .input-group:last-child {
     margin-bottom: 0;
-}
-
-.edit-modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
 }
 
 .card-actions {
