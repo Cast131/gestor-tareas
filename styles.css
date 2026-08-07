@@ -1979,7 +1979,8 @@ input.factura-task-precio:focus { outline: none; border-color: #2b6cb0; box-shad
     body { background: #fff !important; }
     .layout, .sidebar, .hamburger-btn, .toast, .btn-submit, .btn-card-action, .card-actions,
     .btn-reset-danger, .btn-ajuste-primary, .edit-modal-actions, .sidebar-user,
-    .factura-detalle-header, .factura-estado-badge, .detalle-toggle-wrap { display: none !important; }
+    .factura-detalle-header, .factura-estado-badge, .detalle-toggle-wrap,
+    .factura-detalle-cliente, .factura-detalle-fecha, .factura-detalle-notas { display: none !important; }
     .factura-print-title { display: block !important; }
     .modal-overlay:not(#factura-detalle-overlay) { display: none !important; }
     #factura-detalle-overlay { position: static !important; display: block !important; background: none !important; }
