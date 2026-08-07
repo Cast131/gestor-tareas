@@ -926,6 +926,7 @@ var allFacturas = [];
 var facturadosTareaIds = {};
 var editingFacturaId = null;
 var selectedFacturaClienteId = null;
+var factEstadoFilter = document.getElementById('factura-estado-filter');
 var btnCrearFactura = document.getElementById('btn-crear-factura');
 var factTbody = document.getElementById('factura-tbody');
 var factModalOverlay = document.getElementById('factura-modal-overlay');
