@@ -1937,7 +1937,13 @@ input.factura-task-precio:focus { outline: none; border-color: #2b6cb0; box-shad
     border-radius: 10px; margin-bottom: 6px;
 }
 
-.detalle-toggle-wrap { margin: 16px 0 0; text-align: center; }
+.factura-print-title {
+    display: none;
+    font-size: 20px;
+    color: #1e293b;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
 
 .btn-pagar-factura {
     padding: 12px 28px; border: none; border-radius: 12px; background: #16a34a; color: #fff;
@@ -1958,7 +1964,9 @@ input.factura-task-precio:focus { outline: none; border-color: #2b6cb0; box-shad
 @media print {
     body { background: #fff !important; }
     .layout, .sidebar, .hamburger-btn, .toast, .btn-submit, .btn-card-action, .card-actions,
-    .btn-reset-danger, .btn-ajuste-primary, .edit-modal-actions, .sidebar-user { display: none !important; }
+    .btn-reset-danger, .btn-ajuste-primary, .edit-modal-actions, .sidebar-user,
+    .factura-detalle-header, .factura-estado-badge, .detalle-toggle-wrap { display: none !important; }
+    .factura-print-title { display: block !important; }
     .modal-overlay:not(#factura-detalle-overlay) { display: none !important; }
     #factura-detalle-overlay { position: static !important; display: block !important; background: none !important; }
     #factura-detalle-overlay .factura-detalle-card { position: static !important; transform: none !important; max-width: 100% !important; box-shadow: none !important; border: 1px solid #e2e8f0 !important; }

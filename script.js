@@ -1191,6 +1191,7 @@ async function openDetalleFactura(factura) {
     });
     if (items.length === 0) tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#94a3b8;padding:20px;">Sin ítems</td></tr>';
     document.getElementById('detalle-total').textContent = '$' + total.toFixed(2);
+    document.getElementById('detalle-print-title').textContent = 'Actividades realizadas de ' + cn;
     var esPagada = factura.estado === 'pagada';
     detalleTogglePago.textContent = esPagada ? 'Marcar como pendiente' : 'Marcar como pagada';
     detalleTogglePago.className = esPagada ? 'btn-pagar-factura revertir' : 'btn-pagar-factura';
