@@ -710,9 +710,9 @@ function updateStats() {
     var total = allTasks.length;
     var completadas = allTasks.filter(function (t) { return t.completed; }).length;
     var pendientes = total - completadas;
-    document.getElementById('stat-total').textContent = total + ' registradas';
-    document.getElementById('stat-completada').textContent = completadas + ' completadas';
-    document.getElementById('stat-pendiente').textContent = pendientes + ' pendientes';
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-completadas').textContent = completadas;
+    document.getElementById('stat-pendientes').textContent = pendientes;
 }
 
 searchInput.addEventListener('input', renderAllTaskCards);
