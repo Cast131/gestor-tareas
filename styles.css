@@ -1894,7 +1894,22 @@ body {
 .factura-task-desc { display: block; font-size: 13px; color: #1e293b; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .factura-task-materia { font-size: 11px; color: #94a3b8; }
 
-.factura-task-precio { font-size: 13px; font-weight: 700; color: #16a34a; flex-shrink: 0; }
+.factura-task-precio {
+    font-size: 13px; font-weight: 700; color: #16a34a; flex-shrink: 0;
+}
+
+.factura-task-precio-input {
+    width: 100px; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 8px;
+    font-size: 13px; font-weight: 700; color: #16a34a; background: #fff; text-align: right;
+}
+.factura-task-precio-input:focus { outline: none; border-color: #2b6cb0; box-shadow: 0 0 0 2px rgba(43,108,176,0.15); }
+
+/* Replace with input styling */
+input.factura-task-precio {
+    width: 95px; padding: 5px 8px; border: 1px solid #e2e8f0; border-radius: 8px;
+    font-size: 13px; font-weight: 700; color: #16a34a; background: #fff; text-align: right; flex-shrink: 0;
+}
+input.factura-task-precio:focus { outline: none; border-color: #2b6cb0; box-shadow: 0 0 0 2px rgba(43,108,176,0.15); }
 
 .factura-total {
     display: flex; justify-content: space-between; align-items: center;
@@ -1915,6 +1930,22 @@ body {
 .factura-detalle-fecha { font-size: 13px; color: #94a3b8; margin-bottom: 14px; }
 .factura-detalle-notas { font-size: 13px; color: #64748b; font-style: italic; margin-bottom: 14px; background: #fff3cd; padding: 8px 12px; border-radius: 8px; }
 .factura-detalle-table { margin-bottom: 0 !important; }
+
+.facturado-badge {
+    display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; background: #ede9fe; color: #7c3aed; padding: 3px 9px;
+    border-radius: 10px; margin-bottom: 6px;
+}
+
+.detalle-toggle-wrap { margin: 16px 0 0; text-align: center; }
+
+.btn-pagar-factura {
+    padding: 12px 28px; border: none; border-radius: 12px; background: #16a34a; color: #fff;
+    font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.btn-pagar-factura:hover { background: #15803d; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22,163,74,0.3); }
+.btn-pagar-factura.revertir { background: #f59e0b; }
+.btn-pagar-factura.revertir:hover { background: #d97706; box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
 .factura-detalle-table thead th:first-child { width: 70%; }
 .factura-detalle-table thead th:last-child { width: 30%; text-align: right; }
 .factura-detalle-table tbody td:last-child { text-align: right; font-weight: 600; }

@@ -73,6 +73,7 @@ supabaseClient.auth.onAuthStateChange(function (event, session) {
             loadClients();
             loadTasks();
             loadFacturas();
+            loadFacturadosCache();
             updateFilterTitle();
             maybeWarnExport();
         }
@@ -88,6 +89,7 @@ supabaseClient.auth.onAuthStateChange(function (event, session) {
         await loadClients();
         await loadTasks();
         await loadFacturas();
+        await loadFacturadosCache();
         updateFilterTitle();
         maybeWarnExport();
     } else {
@@ -567,6 +569,7 @@ function renderTaskCard(task) {
             '<h3>' + escapeHtml(clienteName) + '</h3>' +
         '</div>' +
         (task.created_by_email ? '<p class="creador">Por: ' + escapeHtml(task.created_by_email) + '</p>' : '') +
+        (facturadosTareaIds[task.id] ? '<span class="facturado-badge">Facturado</span>' : '') +
         '<p class="materia">' + escapeHtml(task.materia) + '</p>' +
         '<p class="descripcion">' + escapeHtml(task.descripcion) + '</p>' +
         '<div class="card-footer">' +
@@ -920,8 +923,9 @@ if ('serviceWorker' in navigator) {
 
 // ===== FACTURACIÓN =====
 var allFacturas = [];
+var facturadosTareaIds = {};
 var editingFacturaId = null;
-var factEstadoFilter = document.getElementById('factura-estado-filter');
+var selectedFacturaClienteId = null;
 var btnCrearFactura = document.getElementById('btn-crear-factura');
 var factTbody = document.getElementById('factura-tbody');
 var factModalOverlay = document.getElementById('factura-modal-overlay');
@@ -936,6 +940,15 @@ var factNotas = document.getElementById('factura-notas');
 var factTotalValor = document.getElementById('factura-total-valor');
 var factModalSave = document.getElementById('factura-modal-save');
 var factModalCancel = document.getElementById('factura-modal-cancel');
+var factFechaDesde = document.getElementById('factura-fecha-desde');
+var factFechaHasta = document.getElementById('factura-fecha-hasta');
+var detalleTogglePago = document.getElementById('detalle-toggle-pago');
+
+async function loadFacturadosCache() {
+    var r = await supabaseClient.from('factura_items').select('tarea_id');
+    facturadosTareaIds = {};
+    if (r.data) r.data.forEach(function (fi) { if (fi.tarea_id) facturadosTareaIds[fi.tarea_id] = true; });
+}
 var selectedFacturaClienteId = null;
 var detalleOverlay = document.getElementById('factura-detalle-overlay');
 
@@ -989,36 +1002,42 @@ factClienteInput.addEventListener('input', function () {
     if (matches.length > 0) factClienteSuggestions.classList.add('active');
 });
 
+factFechaDesde.addEventListener('change', function () { if (selectedFacturaClienteId) loadFacturaTasks(); });
+factFechaHasta.addEventListener('change', function () { if (selectedFacturaClienteId) loadFacturaTasks(); });
+
 async function loadFacturaTasks() {
     var clienteId = selectedFacturaClienteId;
     if (!clienteId) return;
-    var tareasResult = await supabaseClient.from('tareas')
-        .select('*')
-        .eq('cliente_id', clienteId)
-        .eq('completed', true)
-        .order('created_at', { ascending: false });
+    document.getElementById('factura-date-filter').style.display = 'block';
+    var query = supabaseClient.from('tareas').select('*').eq('cliente_id', clienteId).eq('completed', true).order('fecha_iso', { ascending: false });
+    var desde = factFechaDesde.value;
+    var hasta = factFechaHasta.value;
+    if (desde) query = query.gte('fecha_iso', desde);
+    if (hasta) query = query.lte('fecha_iso', hasta);
+    var tareasResult = await query;
     var tasks = (tareasResult.data || []).filter(function (t) { return t.precio != null && Number(t.precio) > 0; });
     var allItemsResult = await supabaseClient.from('factura_items').select('tarea_id,factura_id');
-    var allItemIds = [];
-    (allItemsResult.data || []).forEach(function (fi) { if (fi.tarea_id) allItemIds.push({ tarea_id: fi.tarea_id, factura_id: fi.factura_id }); });
+    var allItems = allItemsResult.data || [];
     var currentItems = [];
-    if (editingFacturaId) {
-        currentItems = allItemIds.filter(function (fi) { return fi.factura_id === editingFacturaId; }).map(function (fi) { return fi.tarea_id; });
-    }
-    var externalIds = allItemIds.filter(function (fi) { return fi.factura_id !== editingFacturaId; }).map(function (fi) { return fi.tarea_id; });
+    if (editingFacturaId) currentItems = allItems.filter(function (fi) { return fi.factura_id === editingFacturaId && fi.tarea_id; }).map(function (fi) { return fi.tarea_id; });
+    var externalTareaIds = allItems.filter(function (fi) { return fi.factura_id !== editingFacturaId && fi.tarea_id; }).map(function (fi) { return fi.tarea_id; });
 
     factItemsList.innerHTML = '';
     var total = 0;
     tasks.forEach(function (t) {
-        if (externalIds.indexOf(t.id) !== -1) return;
+        if (externalTareaIds.indexOf(t.id) !== -1) return;
         var checked = editingFacturaId && currentItems.indexOf(t.id) !== -1;
         var precio = Number(t.precio);
         var row = document.createElement('label');
         row.className = 'factura-task-item';
-        row.innerHTML = '<input type="checkbox" class="factura-task-check" data-id="' + t.id + '" data-precio="' + precio + '" data-desc="' + escapeHtml(t.descripcion || t.materia) + '"' + (checked ? ' checked' : '') + '>' +
-            '<div class="factura-task-info"><span class="factura-task-desc">' + escapeHtml(t.descripcion) + '</span><span class="factura-task-materia">' + escapeHtml(t.materia) + '</span></div>' +
-            '<span class="factura-task-precio">$' + precio.toFixed(2) + '</span>';
-        row.querySelector('input').addEventListener('change', updateFacturaTotal);
+        row.innerHTML = '<input type="checkbox" class="factura-task-check" data-id="' + t.id + '"' + (checked ? ' checked' : '') + '>' +
+            '<div class="factura-task-info"><span class="factura-task-desc">' + escapeHtml(t.descripcion) + '</span><span class="factura-task-materia">' + escapeHtml(t.materia) + ' · ' + escapeHtml(t.fecha) + '</span></div>' +
+            '<input type="number" class="factura-task-precio" value="' + precio.toFixed(2) + '" min="0" step="0.01" data-id="' + t.id + '" data-orig="' + precio + '" data-desc="' + escapeHtml(t.descripcion || t.materia) + '">';
+        var checkEl = row.querySelector('.factura-task-check');
+        var precioEl = row.querySelector('.factura-task-precio');
+        checkEl.addEventListener('change', function () { updateFacturaTotal(); });
+        precioEl.addEventListener('input', function () { updateFacturaTotal(); });
+        precioEl.addEventListener('change', function () { updateFacturaTotal(); });
         factItemsList.appendChild(row);
         if (checked) total += precio;
     });
@@ -1033,7 +1052,10 @@ async function loadFacturaTasks() {
 
 function updateFacturaTotal() {
     var total = 0;
-    factItemsList.querySelectorAll('.factura-task-check:checked').forEach(function (c) { total += Number(c.dataset.precio); });
+    factItemsList.querySelectorAll('.factura-task-check:checked').forEach(function (c) {
+        var precioEl = c.parentNode.querySelector('.factura-task-precio');
+        total += precioEl ? Number(precioEl.value) || 0 : 0;
+    });
     factTotalValor.textContent = '$' + total.toFixed(2);
 }
 
@@ -1050,6 +1072,9 @@ btnCrearFactura.addEventListener('click', function () {
     factItemsEmpty.style.display = 'block';
     factItemsEmpty.textContent = 'Selecciona un cliente para ver sus tareas con precio.';
     factTotalValor.textContent = '$0.00';
+    factFechaDesde.value = '';
+    factFechaHasta.value = '';
+    document.getElementById('factura-date-filter').style.display = 'none';
     openFacturaModal();
 });
 
@@ -1059,13 +1084,27 @@ factModalSave.addEventListener('click', async function () {
     if (checks.length === 0) { showToast('Selecciona al menos una tarea'); return; }
     var total = 0;
     var items = [];
+    var updatedTasks = [];
     checks.forEach(function (c) {
-        var precio = Number(c.dataset.precio);
+        var precioEl = c.parentNode.querySelector('.factura-task-precio');
+        var precio = precioEl ? Number(precioEl.value) || 0 : 0;
         total += precio;
-        items.push({ tarea_id: parseInt(c.dataset.id), precio: precio, descripcion: c.dataset.desc || '' });
+        var tareaId = parseInt(c.dataset.id);
+        items.push({ tarea_id: tareaId, precio: precio, descripcion: precioEl ? precioEl.dataset.desc || '' : '' });
+        var origPrecio = precioEl ? Number(precioEl.dataset.orig) : null;
+        if (origPrecio !== null && Math.abs(precio - origPrecio) > 0.001) {
+            updatedTasks.push({ id: tareaId, precio: precio });
+        }
     });
     var notas = factNotas.value.trim() || null;
     try {
+        // Update changed task prices
+        for (var u = 0; u < updatedTasks.length; u++) {
+            await supabaseClient.from('tareas').update({ precio: updatedTasks[u].precio }).eq('id', updatedTasks[u].id);
+            for (var j = 0; j < allTasks.length; j++) {
+                if (allTasks[j].id === updatedTasks[u].id) allTasks[j].precio = updatedTasks[u].precio;
+            }
+        }
         if (editingFacturaId) {
             await supabaseClient.from('factura_items').delete().eq('factura_id', editingFacturaId);
             var upd = await supabaseClient.from('facturas').update({ total: total, notas: notas }).eq('id', editingFacturaId);
@@ -1086,6 +1125,8 @@ factModalSave.addEventListener('click', async function () {
             allFacturas.unshift(ins.data);
             showToast('Factura creada');
         }
+        await loadFacturadosCache();
+        renderAllTaskCards();
         closeFacturaModal();
         renderFacturas();
     } catch (err) { showToast(err.message); }
@@ -1096,6 +1137,9 @@ async function openEditFacturaModal(factura) {
     factModalTitle.textContent = 'Editar Factura';
     factModalSave.textContent = 'Guardar Cambios';
     factNotas.value = factura.notas || '';
+    factFechaDesde.value = '';
+    factFechaHasta.value = '';
+    document.getElementById('factura-date-filter').style.display = 'block';
     var cliente = allClients.find(function (c) { return c.id === factura.cliente_id; });
     if (!cliente) { showToast('Cliente no encontrado'); return; }
     factClienteInput.value = cliente.nombre;
@@ -1146,6 +1190,14 @@ async function openDetalleFactura(factura) {
     });
     if (items.length === 0) tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#94a3b8;padding:20px;">Sin ítems</td></tr>';
     document.getElementById('detalle-total').textContent = '$' + total.toFixed(2);
+    var esPagada = factura.estado === 'pagada';
+    detalleTogglePago.textContent = esPagada ? 'Marcar como pendiente' : 'Marcar como pagada';
+    detalleTogglePago.className = esPagada ? 'btn-pagar-factura revertir' : 'btn-pagar-factura';
+    detalleTogglePago.style.display = 'block';
+    detalleTogglePago.onclick = async function () {
+        await toggleFacturaEstado(factura);
+        detalleOverlay.classList.remove('active');
+    };
     detalleOverlay.classList.add('active');
 }
 

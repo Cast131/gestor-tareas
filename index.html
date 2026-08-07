@@ -358,7 +358,7 @@
     </div>
 
     <div class="modal-overlay" id="factura-modal-overlay">
-        <div class="modal-card edit-modal-card" style="max-width:600px">
+        <div class="modal-card edit-modal-card" style="max-width:680px">
             <h3 id="factura-modal-title">Nueva Factura</h3>
             <div class="edit-modal-body">
                 <div class="input-group">
@@ -368,6 +368,16 @@
                         <div class="cliente-suggestions" id="factura-cliente-suggestions"></div>
                     </div>
                     <div class="cliente-indicator" id="factura-cliente-indicator"></div>
+                </div>
+                <div class="form-row" id="factura-date-filter">
+                    <div class="input-group">
+                        <label>Desde</label>
+                        <input type="date" id="factura-fecha-desde">
+                    </div>
+                    <div class="input-group">
+                        <label>Hasta</label>
+                        <input type="date" id="factura-fecha-hasta">
+                    </div>
                 </div>
                 <div class="factura-items-section" id="factura-items-section">
                     <p class="factura-items-empty" id="factura-items-empty">Selecciona un cliente para ver sus tareas con precio.</p>
@@ -405,6 +415,9 @@
             <div class="factura-total">
                 <span>Total:</span>
                 <strong id="detalle-total">$0.00</strong>
+            </div>
+            <div class="detalle-toggle-wrap">
+                <button type="button" class="btn-pagar-factura" id="detalle-toggle-pago">Marcar como pagada</button>
             </div>
             <div class="edit-modal-actions">
                 <button type="button" class="modal-btn-cancel" id="detalle-cerrar">Cerrar</button>
