@@ -1868,7 +1868,21 @@ body {
 .factura-pagada { background: #dcfce7; color: #16a34a; }
 .factura-pendiente { background: #fef3c7; color: #b45309; }
 
-.factura-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.factura-actions { display: flex; gap: 4px; justify-content: flex-end; align-items: center; }
+.btn-factura-text {
+    background: none; border: 1px solid #e2e8f0; border-radius: 6px; padding: 3px 8px;
+    font-size: 11px; font-weight: 600; color: #475569; cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
+}
+.btn-factura-text:hover { background: #f1f5f9; border-color: #2b6cb0; color: #2b6cb0; }
+.btn-factura-toggle-text { color: #16a34a; border-color: #bbf7d0; background: #f0fdf4; }
+.btn-factura-toggle-text:hover { background: #bbf7d0; color: #15803d; }
+.btn-factura-delete {
+    background: none; border: 1px solid #fecaca; border-radius: 6px; padding: 3px 8px;
+    font-size: 11px; font-weight: 600; color: #dc2626; cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
+}
+.btn-factura-delete:hover { background: #fee2e2; }
 
 .btn-table-action {
     width: 30px; height: 30px;

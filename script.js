@@ -1176,7 +1176,8 @@ async function openDetalleFactura(factura) {
     document.getElementById('detalle-id').textContent = factura.id;
     document.getElementById('detalle-estado').textContent = factura.estado === 'pagada' ? 'Pagada' : 'Pendiente';
     document.getElementById('detalle-estado').className = 'factura-badge ' + (factura.estado === 'pagada' ? 'factura-pagada' : 'factura-pendiente');
-    document.getElementById('detalle-cliente').textContent = (allClients.find(function (c) { return c.id === factura.cliente_id; }) || {}).nombre || 'Sin cliente';
+    var cn = (allClients.find(function (c) { return c.id === factura.cliente_id; }) || {}).nombre || 'Sin cliente';
+    document.getElementById('detalle-cliente').textContent = cn;
     document.getElementById('detalle-fecha').textContent = factura.fecha;
     var notasEl = document.getElementById('detalle-notas');
     if (factura.notas) { notasEl.style.display = 'block'; notasEl.textContent = 'Notas: ' + factura.notas; } else notasEl.style.display = 'none';
@@ -1229,15 +1230,15 @@ function renderFacturas() {
             '<td><span class="factura-badge ' + (f.estado === 'pagada' ? 'factura-pagada' : 'factura-pendiente') + '">' + (f.estado === 'pagada' ? 'Pagada' : 'Pendiente') + '</span></td>' +
             '<td style="font-size:12px;color:#94a3b8">' + escapeHtml(f.created_by_email || '') + '</td>' +
             '<td class="factura-actions">' +
-                '<button class="btn-table-action btn-factura-ver" title="Ver"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
-                '<button class="btn-table-action btn-factura-edit" title="Editar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
-                '<button class="btn-table-action btn-factura-toggle" title="' + (f.estado === 'pagada' ? 'Marcar pendiente' : 'Marcar pagada') + '"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="' + (f.estado === 'pagada' ? '1 4 1 10 7 10' : '23 6 13.5 15.5 8.5 10.5 1 18') + '"/></svg></button>' +
-                '<button class="btn-table-delete" title="Eliminar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+                '<button class="btn-factura-text" title="Ver">Visualizar</button>' +
+                '<button class="btn-factura-text" title="Editar">Editar</button>' +
+                '<button class="btn-factura-text btn-factura-toggle-text" title="' + (f.estado === 'pagada' ? 'Marcar pendiente' : 'Marcar pagada') + '">' + (f.estado === 'pagada' ? 'Pendiente' : 'Pagar') + '</button>' +
+                '<button class="btn-factura-delete" title="Eliminar">Eliminar</button>' +
             '</td>';
-        tr.querySelector('.btn-factura-ver').addEventListener('click', function () { openDetalleFactura(f); });
-        tr.querySelector('.btn-factura-edit').addEventListener('click', function () { openEditFacturaModal(f); });
-        tr.querySelector('.btn-factura-toggle').addEventListener('click', function () { toggleFacturaEstado(f); });
-        tr.querySelector('.btn-table-delete').addEventListener('click', function () { deleteFactura(f); });
+        tr.querySelectorAll('.btn-factura-text')[0].addEventListener('click', function () { openDetalleFactura(f); });
+        tr.querySelectorAll('.btn-factura-text')[1].addEventListener('click', function () { openEditFacturaModal(f); });
+        tr.querySelectorAll('.btn-factura-text')[2].addEventListener('click', function () { toggleFacturaEstado(f); });
+        tr.querySelector('.btn-factura-delete').addEventListener('click', function () { deleteFactura(f); });
         factTbody.appendChild(tr);
     });
 }
