@@ -21,6 +21,7 @@ function showApp(user) {
     authOverlay.classList.add('hidden');
     appLayout.classList.remove('hidden');
     sidebarUserEmail.textContent = user.email || '';
+    updateLastExportInfo();
 }
 
 function showAuth() {
@@ -72,6 +73,7 @@ supabaseClient.auth.onAuthStateChange(function (event, session) {
             loadClients();
             loadTasks();
             updateFilterTitle();
+            maybeWarnExport();
         }
     } else {
         showAuth();
@@ -85,6 +87,7 @@ supabaseClient.auth.onAuthStateChange(function (event, session) {
         await loadClients();
         await loadTasks();
         updateFilterTitle();
+        maybeWarnExport();
     } else {
         showAuth();
     }
@@ -208,6 +211,9 @@ sidebarBtns.forEach(function (btn) {
         }
         if (panelId === 'historial') {
             renderHistorial();
+        }
+        if (panelId === 'ajustes') {
+            updateLastExportInfo();
         }
     });
 });
@@ -565,8 +571,14 @@ function renderTaskCard(task) {
         '</div>';
 
     taskCard.querySelector('.checkbox-complete').addEventListener('change', function () {
+        var checkbox = this;
         var newCompleted = this.checked;
-        supabaseClient.from('tareas').update({ completed: newCompleted }).eq('id', task.id).then(function () {
+        supabaseClient.from('tareas').update({ completed: newCompleted }).eq('id', task.id).then(function (result) {
+            if (result.error) {
+                checkbox.checked = !newCompleted;
+                showToast('Error al actualizar el estado');
+                return;
+            }
             task.completed = newCompleted;
             if (newCompleted) taskCard.classList.add('completed');
             else taskCard.classList.remove('completed');
@@ -691,6 +703,16 @@ function renderAllTaskCards() {
     allTasks.forEach(function (task) {
         if (taskMatchesFilters(task)) container.appendChild(renderTaskCard(task));
     });
+    updateStats();
+}
+
+function updateStats() {
+    var total = allTasks.length;
+    var completadas = allTasks.filter(function (t) { return t.completed; }).length;
+    var pendientes = total - completadas;
+    document.getElementById('stat-total').textContent = total + ' registradas';
+    document.getElementById('stat-completada').textContent = completadas + ' completadas';
+    document.getElementById('stat-pendiente').textContent = pendientes + ' pendientes';
 }
 
 searchInput.addEventListener('input', renderAllTaskCards);
@@ -779,8 +801,11 @@ document.querySelectorAll('#priority-pills .priority-pill').forEach(function (bt
     });
 });
 
+var formSubmitBtn = form.querySelector('.btn-submit');
+
 form.addEventListener('submit', async function (evento) {
     evento.preventDefault();
+    if (formSubmitBtn.disabled) return;
 
     var clienteNombre = clienteInput.value.trim();
     var materia = document.getElementById('materia').value;
@@ -793,64 +818,69 @@ form.addEventListener('submit', async function (evento) {
 
     if (!clienteNombre) { showToast('Ingresa el nombre del cliente'); return; }
 
-    var clienteId = selectedClienteId;
+    formSubmitBtn.disabled = true;
+    try {
+        var clienteId = selectedClienteId;
 
-    if (!clienteId) {
-        var exactMatch = allClients.filter(function (c) {
-            return c.nombre.toLowerCase() === clienteNombre.toLowerCase();
-        });
-        if (exactMatch.length > 0) {
-            clienteId = exactMatch[0].id;
-        } else {
-            var clientResult = await supabaseClient
-                .from('clientes')
-                .insert([{ nombre: clienteNombre }])
-                .select()
-                .single();
-            if (clientResult.error) { showToast('Error al crear cliente'); return; }
-            allClients.push(clientResult.data);
-            populateHistorialClienteFilter();
-            clienteId = clientResult.data.id;
-            showToast('Cliente "' + clienteNombre + '" creado');
+        if (!clienteId) {
+            var exactMatch = allClients.filter(function (c) {
+                return c.nombre.toLowerCase() === clienteNombre.toLowerCase();
+            });
+            if (exactMatch.length > 0) {
+                clienteId = exactMatch[0].id;
+            } else {
+                var clientResult = await supabaseClient
+                    .from('clientes')
+                    .insert([{ nombre: clienteNombre }])
+                    .select()
+                    .single();
+                if (clientResult.error) { showToast('Error al crear cliente'); return; }
+                allClients.push(clientResult.data);
+                populateHistorialClienteFilter();
+                clienteId = clientResult.data.id;
+                showToast('Cliente "' + clienteNombre + '" creado');
+            }
         }
+
+        var result = await supabaseClient
+            .from('tareas')
+            .insert([{
+                cliente_id: clienteId,
+                materia: materia,
+                descripcion: tarea,
+                fecha: fecha,
+                fecha_iso: fechaIso,
+                priority: prioridad,
+                precio: precio,
+                completed: false
+            }])
+            .select()
+            .single();
+
+        if (result.error) { showToast('Error al guardar la tarea'); return; }
+
+        allTasks.unshift(result.data);
+        renderAllTaskCards();
+        renderActividadesCalendar();
+
+        form.reset();
+        document.getElementById('prioridad').value = 'media';
+        document.querySelectorAll('#priority-pills .priority-pill').forEach(function (b) {
+            b.classList.toggle('active', b.dataset.value === 'media');
+        });
+        clienteInput.value = '';
+        selectedClienteId = null;
+        clienteIndicator.className = 'cliente-indicator';
+        clienteIndicator.textContent = '';
+        selectedDate = null;
+        currentMonth = currentDate.getMonth();
+        currentYear = currentDate.getFullYear();
+        renderFormCalendar();
+
+        showToast('Tarea guardada correctamente');
+    } finally {
+        formSubmitBtn.disabled = false;
     }
-
-    var result = await supabaseClient
-        .from('tareas')
-        .insert([{
-            cliente_id: clienteId,
-            materia: materia,
-            descripcion: tarea,
-            fecha: fecha,
-            fecha_iso: fechaIso,
-            priority: prioridad,
-            precio: precio,
-            completed: false
-        }])
-        .select()
-        .single();
-
-    if (result.error) { showToast('Error al guardar la tarea'); return; }
-
-    allTasks.unshift(result.data);
-    renderAllTaskCards();
-    renderActividadesCalendar();
-
-    form.reset();
-    document.getElementById('prioridad').value = 'media';
-    document.querySelectorAll('#priority-pills .priority-pill').forEach(function (b) {
-        b.classList.toggle('active', b.dataset.value === 'media');
-    });
-    clienteInput.value = '';
-    selectedClienteId = null;
-    clienteIndicator.className = 'cliente-indicator';
-    clienteIndicator.textContent = '';
-    selectedDate = null;
-    currentMonth = currentDate.getMonth();
-    currentYear = currentDate.getFullYear();
-    renderFormCalendar();
-
-    showToast('Tarea guardada correctamente');
 });
 
 // ===== AJUSTES: RESET =====
@@ -859,6 +889,7 @@ document.getElementById('btn-reset-data').addEventListener('click', function () 
         'Esta acción <strong>eliminará permanentemente</strong> todas tus tareas y clientes. No se puede deshacer.',
         'ELIMINAR',
         async function () {
+            downloadBackup('respaldo-antes-reset');
             var err1 = await supabaseClient.from('tareas').delete().gte('id', 0);
             var err2 = await supabaseClient.from('clientes').delete().gte('id', 0);
             if (err1.error || err2.error) {
@@ -885,27 +916,68 @@ var importFileInput = document.getElementById('import-file-input');
 var btnExport = document.getElementById('btn-export-data');
 var btnImport = document.getElementById('btn-import-data');
 
-btnExport.addEventListener('click', function () {
-    if (allTasks.length === 0 && allClients.length === 0) {
-        showAlert('No hay datos para exportar.');
-        return;
-    }
-    var payload = {
+function buildExportPayload() {
+    return {
         version: 1,
         exportedAt: new Date().toISOString(),
         clients: allClients,
         tasks: allTasks
     };
-    var json = JSON.stringify(payload, null, 2);
+}
+
+function downloadBackup(filenamePrefix) {
+    if (allTasks.length === 0 && allClients.length === 0) return false;
+    var json = JSON.stringify(buildExportPayload(), null, 2);
     var blob = new Blob([json], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'gestor-tareas-' + new Date().toISOString().split('T')[0] + '.json';
+    a.download = (filenamePrefix || 'gestor-tareas') + '-' + new Date().toISOString().split('T')[0] + '.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    return true;
+}
+
+function recordExport() {
+    try { localStorage.setItem('gestor-last-export', new Date().toISOString()); } catch (e) {}
+}
+
+function getDaysSinceLastExport() {
+    var last = null;
+    try { last = localStorage.getItem('gestor-last-export'); } catch (e) {}
+    if (!last) return null;
+    return Math.floor((Date.now() - new Date(last).getTime()) / 86400000);
+}
+
+function updateLastExportInfo() {
+    var el = document.getElementById('last-export-info');
+    if (!el) return;
+    var days = getDaysSinceLastExport();
+    if (days === null) {
+        el.textContent = 'Nunca has descargado un respaldo en este dispositivo.';
+    } else {
+        el.textContent = 'Último respaldo en este dispositivo: hace ' + days + (days === 1 ? ' día' : ' días') + '.';
+    }
+}
+
+function maybeWarnExport() {
+    var days = getDaysSinceLastExport();
+    if (days === null) {
+        showToast('Consejo: descarga un respaldo desde Ajustes → Exportar');
+    } else if (days >= 30) {
+        showToast('Hace ' + days + ' días que no descargas un respaldo');
+    }
+}
+
+btnExport.addEventListener('click', function () {
+    if (!downloadBackup()) {
+        showAlert('No hay datos para exportar.');
+        return;
+    }
+    recordExport();
+    updateLastExportInfo();
     showToast('Datos exportados correctamente');
 });
 
@@ -969,6 +1041,7 @@ function showImportConfirm(msg, data) {
 async function performImport(data, mode) {
     try {
         if (mode === 'replace') {
+            downloadBackup('respaldo-antes-import');
             var del1 = await supabaseClient.from('tareas').delete().gte('id', 0);
             if (del1.error) throw new Error('Error al borrar tareas');
             var del2 = await supabaseClient.from('clientes').delete().gte('id', 0);

@@ -140,6 +140,21 @@
             <section id="panel-actividades" class="panel active">
                 <h1>Mis Actividades</h1>
 
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <span class="stat-number" id="stat-total">0</span>
+                        <span class="stat-label">Registradas</span>
+                    </div>
+                    <div class="stat-card stat-done">
+                        <span class="stat-number" id="stat-done">0</span>
+                        <span class="stat-label">Hechas</span>
+                    </div>
+                    <div class="stat-card stat-pending">
+                        <span class="stat-number" id="stat-pending">0</span>
+                        <span class="stat-label">Faltantes</span>
+                    </div>
+                </div>
+
                 <div class="actividades-layout">
                 <div class="actividades-calendar" id="actividades-calendar">
                     <div class="calendar-header">
@@ -159,6 +174,11 @@
                 <div class="task-list-section">
                     <div class="filter-bar">
                         <h2 id="filter-title">Todas las tareas</h2>
+                        <div class="stats-bar" id="stats-bar">
+                            <span class="stat-item stat-total" id="stat-total">—</span>
+                            <span class="stat-item stat-completada" id="stat-completada">—</span>
+                            <span class="stat-item stat-pendiente" id="stat-pendiente">—</span>
+                        </div>
                         <div class="filter-controls">
                             <input type="text" id="search-input" class="search-input" placeholder="Buscar tarea...">
                             <select id="filter-status" class="filter-select">
@@ -232,6 +252,7 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             Exportar a JSON
                         </button>
+                        <p class="ajustes-info" id="last-export-info"></p>
                     </div>
 
                     <div class="ajustes-card">
