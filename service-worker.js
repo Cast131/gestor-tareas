@@ -1,4 +1,4 @@
-var CACHE_NAME = 'gestor-tareas-v26';
+var CACHE_NAME = 'gestor-tareas-v27';
 var urlsToCache = [
     '/',
     '/index.html',
@@ -19,6 +19,7 @@ self.addEventListener('install', function (event) {
 
 self.addEventListener('fetch', function (event) {
     if (event.request.url.indexOf('supabase.co') !== -1) return;
+    if (event.request.url.indexOf('cdn.jsdelivr.net') !== -1) return;
     event.respondWith(
         caches.match(event.request).then(function (response) {
             if (response) return response;
