@@ -582,6 +582,7 @@ function renderTaskCard(task) {
             task.completed = newCompleted;
             if (newCompleted) taskCard.classList.add('completed');
             else taskCard.classList.remove('completed');
+            updateStats();
             renderActividadesCalendar();
         });
     });
@@ -595,6 +596,7 @@ function renderTaskCard(task) {
                 }
                 taskCard.remove();
                 allTasks = allTasks.filter(function (t) { return t.id !== task.id; });
+                updateStats();
                 renderActividadesCalendar();
                 showToast('Actividad eliminada');
             });
