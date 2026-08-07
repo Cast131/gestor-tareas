@@ -1,4 +1,4 @@
-var CACHE_NAME = 'gestor-tareas-v27';
+var CACHE_NAME = 'gestor-tareas-v28';
 var urlsToCache = [
     '/',
     '/index.html',
@@ -10,6 +10,7 @@ var urlsToCache = [
 ];
 
 self.addEventListener('install', function (event) {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then(function (cache) {
             return cache.addAll(urlsToCache);
@@ -48,6 +49,8 @@ self.addEventListener('activate', function (event) {
                     return caches.delete(name);
                 })
             );
+        }).then(function () {
+            return self.clients.claim();
         })
     );
 });
