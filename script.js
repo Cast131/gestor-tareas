@@ -72,6 +72,7 @@ supabaseClient.auth.onAuthStateChange(function (event, session) {
         if (initialLoadDone) {
             loadClients();
             loadTasks();
+            loadFacturas();
             updateFilterTitle();
             maybeWarnExport();
         }
@@ -86,6 +87,7 @@ supabaseClient.auth.onAuthStateChange(function (event, session) {
         showApp(sessionResult.data.session.user);
         await loadClients();
         await loadTasks();
+        await loadFacturas();
         updateFilterTitle();
         maybeWarnExport();
     } else {
@@ -214,6 +216,9 @@ sidebarBtns.forEach(function (btn) {
         }
         if (panelId === 'ajustes') {
             updateLastExportInfo();
+        }
+        if (panelId === 'facturacion') {
+            renderFacturas();
         }
     });
 });
@@ -912,6 +917,278 @@ document.getElementById('btn-reset-data').addEventListener('click', function () 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js');
 }
+
+// ===== FACTURACIÓN =====
+var allFacturas = [];
+var editingFacturaId = null;
+var factEstadoFilter = document.getElementById('factura-estado-filter');
+var btnCrearFactura = document.getElementById('btn-crear-factura');
+var factTbody = document.getElementById('factura-tbody');
+var factModalOverlay = document.getElementById('factura-modal-overlay');
+var factModalTitle = document.getElementById('factura-modal-title');
+var factClienteInput = document.getElementById('factura-cliente-input');
+var factClienteSuggestions = document.getElementById('factura-cliente-suggestions');
+var factClienteIndicator = document.getElementById('factura-cliente-indicator');
+var factItemsSection = document.getElementById('factura-items-section');
+var factItemsEmpty = document.getElementById('factura-items-empty');
+var factItemsList = document.getElementById('factura-items-list');
+var factNotas = document.getElementById('factura-notas');
+var factTotalValor = document.getElementById('factura-total-valor');
+var factModalSave = document.getElementById('factura-modal-save');
+var factModalCancel = document.getElementById('factura-modal-cancel');
+var selectedFacturaClienteId = null;
+var detalleOverlay = document.getElementById('factura-detalle-overlay');
+
+function openFacturaModal() {
+    factModalOverlay.classList.add('active');
+}
+
+function closeFacturaModal() {
+    factModalOverlay.classList.remove('active');
+    editingFacturaId = null;
+    selectedFacturaClienteId = null;
+}
+
+factModalCancel.addEventListener('click', closeFacturaModal);
+factModalOverlay.addEventListener('click', function (e) { if (e.target === factModalOverlay) closeFacturaModal(); });
+
+factClienteInput.addEventListener('blur', function () {
+    setTimeout(function () { factClienteSuggestions.classList.remove('active'); }, 200);
+});
+
+factClienteInput.addEventListener('input', function () {
+    var query = this.value.trim();
+    selectedFacturaClienteId = null;
+    factClienteIndicator.className = 'cliente-indicator';
+    factClienteIndicator.textContent = '';
+    factClienteSuggestions.innerHTML = '';
+    factClienteSuggestions.classList.remove('active');
+    factItemsList.innerHTML = '';
+    factItemsEmpty.style.display = 'block';
+    factItemsEmpty.textContent = 'Selecciona un cliente para ver sus tareas con precio.';
+    factTotalValor.textContent = '$0.00';
+    if (!query) return;
+    var matches = allClients.filter(function (c) {
+        return c.nombre.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+    });
+    matches.forEach(function (c) {
+        var item = document.createElement('div');
+        item.className = 'cliente-suggestion-item';
+        item.textContent = c.nombre;
+        item.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            factClienteInput.value = c.nombre;
+            selectedFacturaClienteId = c.id;
+            factClienteIndicator.className = 'cliente-indicator existe';
+            factClienteIndicator.textContent = '✓ Seleccionado';
+            factClienteSuggestions.classList.remove('active');
+            loadFacturaTasks();
+        });
+        factClienteSuggestions.appendChild(item);
+    });
+    if (matches.length > 0) factClienteSuggestions.classList.add('active');
+});
+
+async function loadFacturaTasks() {
+    var clienteId = selectedFacturaClienteId;
+    if (!clienteId) return;
+    var tareasResult = await supabaseClient.from('tareas')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .eq('completed', true)
+        .order('created_at', { ascending: false });
+    var tasks = (tareasResult.data || []).filter(function (t) { return t.precio != null && Number(t.precio) > 0; });
+    var allItemsResult = await supabaseClient.from('factura_items').select('tarea_id,factura_id');
+    var allItemIds = [];
+    (allItemsResult.data || []).forEach(function (fi) { if (fi.tarea_id) allItemIds.push({ tarea_id: fi.tarea_id, factura_id: fi.factura_id }); });
+    var currentItems = [];
+    if (editingFacturaId) {
+        currentItems = allItemIds.filter(function (fi) { return fi.factura_id === editingFacturaId; }).map(function (fi) { return fi.tarea_id; });
+    }
+    var externalIds = allItemIds.filter(function (fi) { return fi.factura_id !== editingFacturaId; }).map(function (fi) { return fi.tarea_id; });
+
+    factItemsList.innerHTML = '';
+    var total = 0;
+    tasks.forEach(function (t) {
+        if (externalIds.indexOf(t.id) !== -1) return;
+        var checked = editingFacturaId && currentItems.indexOf(t.id) !== -1;
+        var precio = Number(t.precio);
+        var row = document.createElement('label');
+        row.className = 'factura-task-item';
+        row.innerHTML = '<input type="checkbox" class="factura-task-check" data-id="' + t.id + '" data-precio="' + precio + '" data-desc="' + escapeHtml(t.descripcion || t.materia) + '"' + (checked ? ' checked' : '') + '>' +
+            '<div class="factura-task-info"><span class="factura-task-desc">' + escapeHtml(t.descripcion) + '</span><span class="factura-task-materia">' + escapeHtml(t.materia) + '</span></div>' +
+            '<span class="factura-task-precio">$' + precio.toFixed(2) + '</span>';
+        row.querySelector('input').addEventListener('change', updateFacturaTotal);
+        factItemsList.appendChild(row);
+        if (checked) total += precio;
+    });
+    if (factItemsList.children.length === 0) {
+        factItemsEmpty.style.display = 'block';
+        factItemsEmpty.textContent = editingFacturaId ? 'Todas las tareas de este cliente ya están en otras facturas.' : 'No hay tareas completadas con precio para este cliente.';
+    } else {
+        factItemsEmpty.style.display = 'none';
+    }
+    updateFacturaTotal();
+}
+
+function updateFacturaTotal() {
+    var total = 0;
+    factItemsList.querySelectorAll('.factura-task-check:checked').forEach(function (c) { total += Number(c.dataset.precio); });
+    factTotalValor.textContent = '$' + total.toFixed(2);
+}
+
+btnCrearFactura.addEventListener('click', function () {
+    editingFacturaId = null;
+    factModalTitle.textContent = 'Nueva Factura';
+    factModalSave.textContent = 'Crear Factura';
+    factClienteInput.value = '';
+    selectedFacturaClienteId = null;
+    factClienteIndicator.className = 'cliente-indicator';
+    factClienteIndicator.textContent = '';
+    factNotas.value = '';
+    factItemsList.innerHTML = '';
+    factItemsEmpty.style.display = 'block';
+    factItemsEmpty.textContent = 'Selecciona un cliente para ver sus tareas con precio.';
+    factTotalValor.textContent = '$0.00';
+    openFacturaModal();
+});
+
+factModalSave.addEventListener('click', async function () {
+    if (!selectedFacturaClienteId) { showToast('Selecciona un cliente'); return; }
+    var checks = factItemsList.querySelectorAll('.factura-task-check:checked');
+    if (checks.length === 0) { showToast('Selecciona al menos una tarea'); return; }
+    var total = 0;
+    var items = [];
+    checks.forEach(function (c) {
+        var precio = Number(c.dataset.precio);
+        total += precio;
+        items.push({ tarea_id: parseInt(c.dataset.id), precio: precio, descripcion: c.dataset.desc || '' });
+    });
+    var notas = factNotas.value.trim() || null;
+    try {
+        if (editingFacturaId) {
+            await supabaseClient.from('factura_items').delete().eq('factura_id', editingFacturaId);
+            var upd = await supabaseClient.from('facturas').update({ total: total, notas: notas }).eq('id', editingFacturaId);
+            if (upd.error) throw new Error('Error al actualizar');
+            items.forEach(function (it) { it.factura_id = editingFacturaId; });
+            var insItems = await supabaseClient.from('factura_items').insert(items);
+            if (insItems.error) throw new Error('Error al guardar items');
+            for (var i = 0; i < allFacturas.length; i++) {
+                if (allFacturas[i].id === editingFacturaId) { allFacturas[i].total = total; allFacturas[i].notas = notas; break; }
+            }
+            showToast('Factura actualizada');
+        } else {
+            var ins = await supabaseClient.from('facturas').insert([{ cliente_id: selectedFacturaClienteId, total: total, notas: notas }]).select().single();
+            if (ins.error) throw new Error('Error al crear factura');
+            items.forEach(function (it) { it.factura_id = ins.data.id; });
+            var insItems = await supabaseClient.from('factura_items').insert(items);
+            if (insItems.error) throw new Error('Error al guardar items');
+            allFacturas.unshift(ins.data);
+            showToast('Factura creada');
+        }
+        closeFacturaModal();
+        renderFacturas();
+    } catch (err) { showToast(err.message); }
+});
+
+async function openEditFacturaModal(factura) {
+    editingFacturaId = factura.id;
+    factModalTitle.textContent = 'Editar Factura';
+    factModalSave.textContent = 'Guardar Cambios';
+    factNotas.value = factura.notas || '';
+    var cliente = allClients.find(function (c) { return c.id === factura.cliente_id; });
+    if (!cliente) { showToast('Cliente no encontrado'); return; }
+    factClienteInput.value = cliente.nombre;
+    selectedFacturaClienteId = cliente.id;
+    factClienteIndicator.className = 'cliente-indicator existe';
+    factClienteIndicator.textContent = '✓ Seleccionado';
+    openFacturaModal();
+    await loadFacturaTasks();
+}
+
+async function deleteFactura(factura) {
+    showConfirm('¿Eliminar esta factura?', async function () {
+        var r = await supabaseClient.from('facturas').delete().eq('id', factura.id);
+        if (!r.error) {
+            allFacturas = allFacturas.filter(function (f) { return f.id !== factura.id; });
+            renderFacturas();
+            showToast('Factura eliminada');
+        } else showToast('Error al eliminar');
+    });
+}
+
+async function toggleFacturaEstado(factura) {
+    var newEstado = factura.estado === 'pagada' ? 'pendiente' : 'pagada';
+    var r = await supabaseClient.from('facturas').update({ estado: newEstado }).eq('id', factura.id);
+    if (!r.error) {
+        factura.estado = newEstado;
+        renderFacturas();
+        showToast(newEstado === 'pagada' ? 'Factura marcada como pagada' : 'Factura marcada como pendiente');
+    }
+}
+
+async function openDetalleFactura(factura) {
+    document.getElementById('detalle-id').textContent = factura.id;
+    document.getElementById('detalle-estado').textContent = factura.estado === 'pagada' ? 'Pagada' : 'Pendiente';
+    document.getElementById('detalle-estado').className = 'factura-badge ' + (factura.estado === 'pagada' ? 'factura-pagada' : 'factura-pendiente');
+    document.getElementById('detalle-cliente').textContent = (allClients.find(function (c) { return c.id === factura.cliente_id; }) || {}).nombre || 'Sin cliente';
+    document.getElementById('detalle-fecha').textContent = factura.fecha;
+    var notasEl = document.getElementById('detalle-notas');
+    if (factura.notas) { notasEl.style.display = 'block'; notasEl.textContent = 'Notas: ' + factura.notas; } else notasEl.style.display = 'none';
+    var itemsResult = await supabaseClient.from('factura_items').select('*').eq('factura_id', factura.id);
+    var items = itemsResult.data || [];
+    var tbody = document.getElementById('detalle-items');
+    tbody.innerHTML = '';
+    var total = 0;
+    items.forEach(function (it) {
+        total += Number(it.precio);
+        tbody.innerHTML += '<tr><td>' + escapeHtml(it.descripcion || 'Sin descripción') + '</td><td>$' + Number(it.precio).toFixed(2) + '</td></tr>';
+    });
+    if (items.length === 0) tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#94a3b8;padding:20px;">Sin ítems</td></tr>';
+    document.getElementById('detalle-total').textContent = '$' + total.toFixed(2);
+    detalleOverlay.classList.add('active');
+}
+
+document.getElementById('detalle-cerrar').addEventListener('click', function () { detalleOverlay.classList.remove('active'); });
+detalleOverlay.addEventListener('click', function (e) { if (e.target === detalleOverlay) detalleOverlay.classList.remove('active'); });
+document.getElementById('detalle-imprimir').addEventListener('click', function () { window.print(); });
+
+async function loadFacturas() {
+    var result = await supabaseClient.from('facturas').select('*').order('created_at', { ascending: false });
+    if (result.error) return;
+    allFacturas = result.data;
+    renderFacturas();
+}
+
+function renderFacturas() {
+    factTbody.innerHTML = '';
+    var filter = factEstadoFilter.value;
+    var filtradas = allFacturas.filter(function (f) { return filter === 'todas' || f.estado === filter; });
+    if (filtradas.length === 0) { factTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:30px;">Sin facturas</td></tr>'; return; }
+    filtradas.forEach(function (f) {
+        var cn = (allClients.find(function (c) { return c.id === f.cliente_id; }) || {}).nombre || 'Sin cliente';
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td>' + escapeHtml(cn) + '</td>' +
+            '<td>' + escapeHtml(f.fecha) + '</td>' +
+            '<td>$' + Number(f.total).toFixed(2) + '</td>' +
+            '<td><span class="factura-badge ' + (f.estado === 'pagada' ? 'factura-pagada' : 'factura-pendiente') + '">' + (f.estado === 'pagada' ? 'Pagada' : 'Pendiente') + '</span></td>' +
+            '<td style="font-size:12px;color:#94a3b8">' + escapeHtml(f.created_by_email || '') + '</td>' +
+            '<td class="factura-actions">' +
+                '<button class="btn-table-action btn-factura-ver" title="Ver"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
+                '<button class="btn-table-action btn-factura-edit" title="Editar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
+                '<button class="btn-table-action btn-factura-toggle" title="' + (f.estado === 'pagada' ? 'Marcar pendiente' : 'Marcar pagada') + '"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="' + (f.estado === 'pagada' ? '1 4 1 10 7 10' : '23 6 13.5 15.5 8.5 10.5 1 18') + '"/></svg></button>' +
+                '<button class="btn-table-delete" title="Eliminar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+            '</td>';
+        tr.querySelector('.btn-factura-ver').addEventListener('click', function () { openDetalleFactura(f); });
+        tr.querySelector('.btn-factura-edit').addEventListener('click', function () { openEditFacturaModal(f); });
+        tr.querySelector('.btn-factura-toggle').addEventListener('click', function () { toggleFacturaEstado(f); });
+        tr.querySelector('.btn-table-delete').addEventListener('click', function () { deleteFactura(f); });
+        factTbody.appendChild(tr);
+    });
+}
+
+factEstadoFilter.addEventListener('change', renderFacturas);
 
 // ===== EXPORTAR / IMPORTAR =====
 var importFileInput = document.getElementById('import-file-input');

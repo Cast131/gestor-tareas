@@ -61,6 +61,10 @@
                     <svg class="sidebar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M1 12h2M21 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
                     <span class="sidebar-label">Ajustes</span>
                 </button>
+                <button class="sidebar-btn" data-panel="facturacion">
+                    <svg class="sidebar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span class="sidebar-label">Facturaci&oacute;n</span>
+                </button>
             </nav>
             <div class="sidebar-user" id="sidebar-user">
                 <span class="sidebar-user-email" id="sidebar-user-email"></span>
@@ -242,6 +246,36 @@
                 </div>
             </section>
 
+            <section id="panel-facturacion" class="panel">
+                <h1>Facturación</h1>
+                <div class="filter-bar">
+                    <h2>Facturas</h2>
+                    <div class="filter-controls">
+                        <select id="factura-estado-filter" class="filter-select">
+                            <option value="todas">Todas</option>
+                            <option value="pendiente">Pendientes</option>
+                            <option value="pagada">Pagadas</option>
+                        </select>
+                        <button type="button" class="btn-submit" id="btn-crear-factura" style="flex:none;width:auto;padding:11px 24px">Nueva Factura</button>
+                    </div>
+                </div>
+                <div class="factura-table-wrapper">
+                    <table class="historial-table factura-table" id="factura-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Creador</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="factura-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
             <section id="panel-ajustes" class="panel">
                 <h1>Ajustes</h1>
 
@@ -319,6 +353,62 @@
             <div class="edit-modal-actions">
                 <button type="button" class="modal-btn-cancel" id="edit-modal-cancel">Cancelar</button>
                 <button type="button" class="modal-btn-ok" id="edit-modal-save">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="factura-modal-overlay">
+        <div class="modal-card edit-modal-card" style="max-width:600px">
+            <h3 id="factura-modal-title">Nueva Factura</h3>
+            <div class="edit-modal-body">
+                <div class="input-group">
+                    <label>Cliente</label>
+                    <div class="cliente-input-wrapper">
+                        <input type="text" id="factura-cliente-input" class="cliente-autocomplete" placeholder="Escribe el nombre del cliente..." autocomplete="off">
+                        <div class="cliente-suggestions" id="factura-cliente-suggestions"></div>
+                    </div>
+                    <div class="cliente-indicator" id="factura-cliente-indicator"></div>
+                </div>
+                <div class="factura-items-section" id="factura-items-section">
+                    <p class="factura-items-empty" id="factura-items-empty">Selecciona un cliente para ver sus tareas con precio.</p>
+                    <div class="factura-items-list" id="factura-items-list"></div>
+                </div>
+                <div class="input-group">
+                    <label for="factura-notas">Notas (opcional)</label>
+                    <textarea id="factura-notas" rows="2" maxlength="500" placeholder="Observaciones..."></textarea>
+                </div>
+                <div class="factura-total" id="factura-total">
+                    <span>Total:</span>
+                    <strong id="factura-total-valor">$0.00</strong>
+                </div>
+            </div>
+            <div class="edit-modal-actions">
+                <button type="button" class="modal-btn-cancel" id="factura-modal-cancel">Cancelar</button>
+                <button type="button" class="modal-btn-ok" id="factura-modal-save">Crear Factura</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="factura-detalle-overlay">
+        <div class="modal-card factura-detalle-card">
+            <div class="factura-detalle-header">
+                <h3>Factura #<span id="detalle-id"></span></h3>
+                <span class="factura-estado-badge" id="detalle-estado"></span>
+            </div>
+            <p class="factura-detalle-cliente" id="detalle-cliente"></p>
+            <p class="factura-detalle-fecha" id="detalle-fecha"></p>
+            <p class="factura-detalle-notas" id="detalle-notas" style="display:none"></p>
+            <table class="historial-table factura-detalle-table">
+                <thead><tr><th>Descripción</th><th>Precio</th></tr></thead>
+                <tbody id="detalle-items"></tbody>
+            </table>
+            <div class="factura-total">
+                <span>Total:</span>
+                <strong id="detalle-total">$0.00</strong>
+            </div>
+            <div class="edit-modal-actions">
+                <button type="button" class="modal-btn-cancel" id="detalle-cerrar">Cerrar</button>
+                <button type="button" class="modal-btn-ok" id="detalle-imprimir">Imprimir</button>
             </div>
         </div>
     </div>

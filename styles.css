@@ -1854,3 +1854,83 @@ body {
         flex: auto;
     }
 }
+
+/* ===== FACTURACIÓN ===== */
+.factura-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+.factura-pagada { background: #dcfce7; color: #16a34a; }
+.factura-pendiente { background: #fef3c7; color: #b45309; }
+
+.factura-actions { display: flex; gap: 4px; justify-content: flex-end; }
+
+.btn-table-action {
+    width: 30px; height: 30px;
+    border: none; border-radius: 6px;
+    background: transparent; color: #94a3b8;
+    cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+.btn-table-action:hover { background: #f1f5f9; color: #475569; }
+.btn-table-action svg { width: 15px; height: 15px; stroke: currentColor; }
+
+.factura-task-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 10px;
+    background: #f8fafc; cursor: pointer; margin-bottom: 8px;
+    transition: border-color 0.15s, background 0.15s;
+}
+.factura-task-item:hover { border-color: #2b6cb0; background: #eff6ff; }
+.factura-task-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #2b6cb0; cursor: pointer; flex-shrink: 0; }
+
+.factura-task-info { flex: 1; min-width: 0; }
+.factura-task-desc { display: block; font-size: 13px; color: #1e293b; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.factura-task-materia { font-size: 11px; color: #94a3b8; }
+
+.factura-task-precio { font-size: 13px; font-weight: 700; color: #16a34a; flex-shrink: 0; }
+
+.factura-total {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0 0; margin-top: 14px;
+    border-top: 2px solid #f1f5f9; font-size: 16px; color: #1e293b;
+}
+.factura-total strong { font-size: 20px; color: #16a34a; }
+
+.factura-items-section { margin-bottom: 14px; }
+.factura-items-empty { font-size: 13px; color: #94a3b8; text-align: center; padding: 20px 0; }
+.factura-items-list { max-height: 280px; overflow-y: auto; }
+
+.factura-detalle-card { max-width: 620px; text-align: left; padding: 28px 32px; }
+.factura-detalle-card .factura-total { padding: 14px 0 0; margin-top: 14px; border-top: 2px solid #f1f5f9; }
+.factura-detalle-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.factura-detalle-header h3 { font-size: 20px; color: #1e293b; margin: 0; }
+.factura-detalle-cliente { font-size: 15px; color: #475569; margin-bottom: 4px; font-weight: 600; }
+.factura-detalle-fecha { font-size: 13px; color: #94a3b8; margin-bottom: 14px; }
+.factura-detalle-notas { font-size: 13px; color: #64748b; font-style: italic; margin-bottom: 14px; background: #fff3cd; padding: 8px 12px; border-radius: 8px; }
+.factura-detalle-table { margin-bottom: 0 !important; }
+.factura-detalle-table thead th:first-child { width: 70%; }
+.factura-detalle-table thead th:last-child { width: 30%; text-align: right; }
+.factura-detalle-table tbody td:last-child { text-align: right; font-weight: 600; }
+
+.factura-table-wrapper { background: #fff; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; }
+.factura-table { margin-bottom: 0 !important; }
+.factura-table thead th:last-child { width: 130px; }
+.factura-table tbody td:last-child { padding: 8px; }
+
+@media print {
+    body { background: #fff !important; }
+    .layout, .sidebar, .hamburger-btn, .toast, .btn-submit, .btn-card-action, .card-actions,
+    .btn-reset-danger, .btn-ajuste-primary, .edit-modal-actions, .sidebar-user { display: none !important; }
+    .modal-overlay:not(#factura-detalle-overlay) { display: none !important; }
+    #factura-detalle-overlay { position: static !important; display: block !important; background: none !important; }
+    #factura-detalle-overlay .factura-detalle-card { position: static !important; transform: none !important; max-width: 100% !important; box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+    .panel { display: none !important; }
+    .main-content { margin: 0 !important; padding: 20px !important; }
+}
