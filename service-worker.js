@@ -1,4 +1,4 @@
-var CACHE_NAME = 'gestor-tareas-v28';
+var CACHE_NAME = 'gestor-tareas-v29';
 var urlsToCache = [
     '/',
     '/index.html',
